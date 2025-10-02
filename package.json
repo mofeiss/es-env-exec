@@ -1,23 +1,37 @@
 {
-  "name": "claude-code-switcher",
-  "version": "2.0.0",
-  "description": "多环境配置管理工具",
+  "name": "env-switch-execute",
+  "version": "1.0.0",
+  "description": "Environment switcher and command executor - Manage and switch between multiple environment configurations",
   "type": "module",
   "bin": {
-    "ccs": "./bin/ccs.js"
+    "es": "./bin/es.js",
+    "ese": "./bin/es.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "claude",
-    "cli",
     "environment",
-    "switcher"
+    "env",
+    "switcher",
+    "cli",
+    "configuration",
+    "executor",
+    "multi-environment"
   ],
-  "author": "ofeiss",
+  "author": "mofeiss",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mofeiss/env-switch-execute.git"
+  },
+  "homepage": "https://github.com/mofeiss/env-switch-execute#readme",
+  "bugs": {
+    "url": "https://github.com/mofeiss/env-switch-execute/issues"
+  },
   "dependencies": {
-    "inquirer": "^8.2.6"
+    "inquirer": "^8.2.6",
+    "chalk": "^4.1.2",
+    "figures": "^3.2.0"
   }
 }

@@ -1,171 +1,372 @@
-# CCS - Claude Code Switcher
+# ESE - Environment Switch Execute
 
-多环境配置管理工具，支持快速切换 Claude/Happy 等服务的 API 环境配置。
+[![npm version](https://img.shields.io/npm/v/env-switch-execute.svg)](https://www.npmjs.com/package/env-switch-execute)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-## 功能特性
+**Universal environment variable manager and command executor.**
 
-- 🎯 **交互式环境选择** - 清晰的菜单界面，快速选择环境
-- 🔐 **环境变量管理** - 自动设置 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`
-- 🚀 **命令执行** - 选择环境后自动执行您的命令
-- 📝 **简洁配置** - JSON 配置文件，易于管理
-- 🔒 **安全显示** - Token 仅显示前后缀，保护敏感信息
+Quickly switch between multiple environment configurations and execute commands with the selected environment variables. Perfect for managing API endpoints, authentication tokens, and any environment-specific settings.
 
-## 安装
+## ✨ Features
 
-### 方式 1: 使用 alias（推荐）
+- 🚀 **Instant Environment Switching** - Select from multiple pre-configured environments with an interactive menu
+- 🔐 **Secure Variable Management** - Store and manage environment variables safely (tokens are masked in display)
+- 🎯 **Universal Compatibility** - Works with any CLI tool or program that uses environment variables
+- 📝 **Simple JSON Configuration** - Easy-to-edit configuration file
+- 🎨 **Two Interface Modes**:
+  - **Quick Launch** (`es <command>`) - Select environment and execute in one step
+  - **Management Mode** (`es`) - Full-featured environment configuration manager
+- 💾 **Persistent Configuration** - Apply environment to `.zshrc` for persistent use
 
-在 `~/.zshrc` 中添加：
+## 📦 Installation
 
-```bash
-alias ccs='node /Users/ofeiss/zshrc/ccs-cli/bin/ccs.js'
-```
-
-然后重新加载配置：
-
-```bash
-source ~/.zshrc
-```
-
-### 方式 2: 添加到 PATH
+### Install globally via npm
 
 ```bash
-ln -s /Users/ofeiss/zshrc/ccs-cli/bin/ccs.js /usr/local/bin/ccs
+npm install -g env-switch-execute
 ```
 
-## 配置
+After installation, two commands will be available:
+- `es` - The recommended 2-letter command (fastest to type)
+- `ese` - The 3-letter alternative command
 
-### 1. 创建配置文件
-
-复制示例配置文件：
+### Install from source
 
 ```bash
-cd /Users/ofeiss/zshrc/ccs-cli
-cp config.json.example config.json
+git clone https://github.com/mofeiss/env-switch-execute.git
+cd env-switch-execute
+npm install
+npm link
 ```
 
-### 2. 编辑配置文件
+## 🚀 Quick Start
 
-编辑 `config.json`，添加您的环境：
+### 1. Create your configuration file
+
+On first run, create `env.json` in the installation directory:
 
 ```json
 {
-  "accounts": [
+  "env": [
     {
-      "name": "我的环境1",
-      "url": "https://api.example.com",
-      "token": "your-token-here"
+      "name": "production",
+      "env": {
+        "API_BASE_URL": "https://api.production.com",
+        "API_TOKEN": "prod-token-here"
+      }
     },
     {
-      "name": "我的环境2",
-      "url": "https://api.example2.com",
-      "token": "another-token-here"
+      "name": "staging",
+      "env": {
+        "API_BASE_URL": "https://api.staging.com",
+        "API_TOKEN": "staging-token-here"
+      }
     }
   ]
 }
 ```
 
-### 3. 设置默认环境变量（可选）
-
-在 `~/.zshrc` 中设置默认配置：
+### 2. Launch with environment selection
 
 ```bash
-export ANTHROPIC_BASE_URL="https://api.default.com"
-export ANTHROPIC_AUTH_TOKEN="default-token"
+# Select environment and run your command
+es curl https://api.example.com/data
+
+# Select environment and run Claude Code
+es claude -c
+
+# Select environment and run any command
+es node script.js
+es python app.py
+es your-command --args
 ```
 
-如果设置了默认环境变量，菜单中会显示 "default" 选项。
-
-## 使用方法
-
-### 基本用法
+### 3. Use Management Mode
 
 ```bash
-ccs <command> [args...]
+# Launch full management interface
+es
 ```
 
-### 示例
+The management interface provides:
+- 🔄 Toggle environments on/off
+- ➕ Add new environments
+- ❌ Delete environments
+- ✏️ Edit configuration (terminal/GUI)
+- 📌 Apply environment to `.zshrc` (persistent)
+- 🔃 Reload configuration
 
-启动 Claude Code：
+## 📖 Usage
+
+### Quick Launch Mode
+
+Execute commands with environment selection:
 
 ```bash
-ccs claude -c --dangerously-skip-permissions
+es <command> [args...]
 ```
 
-启动 Happy：
+**Examples:**
 
 ```bash
-ccs happy --help
+# API testing
+es curl -X GET https://api.example.com/users
+
+# Development tools
+es npm run dev
+es yarn build
+
+# CLI tools with environment variables
+es claude -c --dangerously-skip-permissions
+es happy --help
+
+# Scripts
+es node server.js
+es python train_model.py
 ```
 
-执行任意命令：
+### Management Mode
+
+Launch the interactive management interface:
 
 ```bash
-ccs node --version
-ccs python script.py
+es
 ```
 
-### 与 zsh 函数集成
+**Management Interface:**
 
-您可以在 `~/.zshrc` 中创建快捷函数：
+```
+⚙ ENVIRONMENT CONFIGURATION MANAGER ⚙
+
+APPLIED ENVIRONMENT:
+ - NAME production
+ - API_BASE_URL="https://api.production.com"
+ - API_TOKEN="prod-...here"
+
+> AVAILABLE ENVIRONMENTS:
+> Select environment: (Use arrow keys)
+> [✔] production
+  [✔] staging
+  [✘] development
+
+PREVIEWED ENVIRONMENT:
+ - API_BASE_URL="https://api.production.com"
+ - API_TOKEN="prod-...here"
+
+[⎵]TOGGLE  [D]DEL  [A]ADD  [E]EDIT  [G]GUI  [R]RELOAD  [⏎]APPLY  [Q]QUIT
+```
+
+**Keyboard Shortcuts:**
+- `↑/↓` - Navigate environments
+- `Space` - Toggle environment on/off
+- `Enter` - Apply environment to `.zshrc` (persistent)
+- `A` - Add new environment
+- `D` - Delete selected environment
+- `E` - Edit config in terminal editor
+- `G` - Edit config in GUI editor
+- `R` - Reload configuration
+- `Q` - Quit
+
+### Default Environment (Optional)
+
+You can set a default environment in your shell:
 
 ```bash
-# 使用 ccs 管理环境的 Claude Code 启动函数
-ccx() { ccs claude -c --dangerously-skip-permissions; }
-nccx() { ccs claude --dangerously-skip-permissions; }
-
-# 使用 ccs 管理环境的 Happy 启动函数
-hpx() { ccs happy -c --dangerously-skip-permissions; }
-nhpx() { ccs happy --dangerously-skip-permissions; }
+# In ~/.zshrc
+export API_BASE_URL="https://api.default.com"
+export API_TOKEN="default-token"
 ```
 
-## 工作流程
+When set, a "default" option will appear in the environment selection menu.
 
-1. 运行 `ccs <command>`
-2. 显示环境选择菜单
-3. 使用上下键选择环境，回车确认
-4. 自动设置环境变量并执行您的命令
+## 🔧 Configuration
 
-## 环境选择菜单
+### Configuration File Location
+
+After installation, create `env.json` in one of these locations:
+- Same directory as the installed package
+- Project root (if running from source)
+
+### Configuration Structure
+
+```json
+{
+  "env": [
+    {
+      "name": "environment-name",
+      "env": {
+        "VARIABLE_NAME_1": "value1",
+        "VARIABLE_NAME_2": "value2"
+      },
+      "disable": 0  // Optional: 1 to disable, 0 or omit to enable
+    }
+  ]
+}
+```
+
+**Example - Claude Code environments:**
+
+```json
+{
+  "env": [
+    {
+      "name": "claude-official",
+      "env": {
+        "ANTHROPIC_BASE_URL": "https://api.anthropic.com",
+        "ANTHROPIC_AUTH_TOKEN": "sk-ant-xxx"
+      }
+    },
+    {
+      "name": "claude-proxy",
+      "env": {
+        "ANTHROPIC_BASE_URL": "https://proxy.example.com",
+        "ANTHROPIC_AUTH_TOKEN": "your-proxy-token"
+      }
+    }
+  ]
+}
+```
+
+**Example - Multiple API services:**
+
+```json
+{
+  "env": [
+    {
+      "name": "aws-production",
+      "env": {
+        "AWS_ACCESS_KEY_ID": "AKIA...",
+        "AWS_SECRET_ACCESS_KEY": "xxx",
+        "AWS_REGION": "us-east-1"
+      }
+    },
+    {
+      "name": "openai-gpt4",
+      "env": {
+        "OPENAI_API_KEY": "sk-xxx",
+        "OPENAI_MODEL": "gpt-4"
+      }
+    }
+  ]
+}
+```
+
+## 💡 Use Cases
+
+### 1. API Development & Testing
+
+Switch between different API endpoints and authentication tokens:
+
+```bash
+es curl -X POST https://api.example.com/users -d '{"name":"test"}'
+```
+
+### 2. Multi-Account CLI Tools
+
+Manage multiple accounts for services like Claude Code, AWS, GCP, etc:
+
+```bash
+es claude -c
+es aws s3 ls
+es gcloud projects list
+```
+
+### 3. Development Environments
+
+Switch between dev/staging/production configurations:
+
+```bash
+es npm run deploy
+es docker-compose up
+```
+
+### 4. Script Execution
+
+Run scripts with different environment configurations:
+
+```bash
+es python data_pipeline.py
+es node migrate_database.js
+```
+
+## 🛠️ Advanced Usage
+
+### Shell Integration
+
+Add convenient aliases in your `~/.zshrc`:
+
+```bash
+# Ultra-short aliases
+alias e='es'           # Even shorter than 'es'
+
+# Project-specific shortcuts
+alias prod='es --env production'
+alias stage='es --env staging'
+
+# Tool-specific combinations
+cc() { es claude -c --dangerously-skip-permissions; }
+api() { es curl "$@"; }
+```
+
+### Persistent Environment
+
+Apply an environment to your `.zshrc` for persistent use:
+
+1. Run `es` to launch management mode
+2. Select the environment you want
+3. Press `Enter` to apply
+4. Run `source ~/.zshrc` to activate
+
+The applied environment will be marked in the management interface.
+
+## 📁 Project Structure
 
 ```
-? 请选择环境: (Use arrow keys)
-❯ 我的环境1
-  我的环境2
-  我的环境3
-  default - 12345678...4321 - https://api.default.com
-```
-
-- 普通环境：只显示名称
-- default：显示 token 前后缀和 URL（从环境变量读取）
-
-## 注意事项
-
-- `config.json` 包含敏感信息，已添加到 `.gitignore`
-- Token 在执行时会显示前 8 位和后 4 位
-- 如果未设置默认环境变量，选择 "default" 将提示错误
-
-## 开发
-
-### 项目结构
-
-```
-ccs-cli/
+env-switch-execute/
 ├── bin/
-│   └── ccs.js              # CLI 入口
+│   └── es.js              # CLI entry point
 ├── src/
-│   ├── config-loader.js    # 配置加载
-│   ├── menu.js            # 交互式菜单
-│   └── launcher.js        # 命令启动器
-├── config.json            # 环境配置（敏感）
-├── config.json.example    # 配置示例
-└── package.json
+│   ├── config-loader.js   # Configuration management
+│   ├── menu.js            # Interactive environment selector
+│   ├── launcher.js        # Command executor
+│   └── management.js      # Management interface
+├── env.json               # Your environments (git-ignored)
+├── env.json.example       # Configuration template
+├── package.json
+└── README.md
 ```
 
-### 依赖
+## 🔒 Security
 
-- Node.js
-- inquirer@^8.2.6 - 交互式命令行界面
+- **Configuration file (`env.json`) is automatically git-ignored**
+- Tokens and secrets are masked in the UI (showing only first 5 and last 5 characters)
+- Environment variables are only set for the duration of command execution
+- Persistent environments (via `.zshrc`) require manual activation
 
-## 许可证
+## 🤝 Contributing
 
-MIT
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+MIT © [mofeiss](https://github.com/mofeiss)
+
+## 🐛 Issues
+
+Found a bug or have a feature request? Please open an issue on [GitHub](https://github.com/mofeiss/env-switch-execute/issues).
+
+## 📮 Links
+
+- [npm package](https://www.npmjs.com/package/env-switch-execute)
+- [GitHub repository](https://github.com/mofeiss/env-switch-execute)
+- [Changelog](https://github.com/mofeiss/env-switch-execute/releases)
+
+---
+
+**Made with ❤️ by [mofeiss](https://github.com/mofeiss)**

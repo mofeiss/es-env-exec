@@ -149,8 +149,8 @@ export function getAppliedEnvironment() {
     const zshrcPath = getZshrcPath();
     const content = readFileSync(zshrcPath, 'utf-8');
 
-    // 查找标记区域
-    const markerRegex = /# === CCS MANAGED ENVIRONMENT - DO NOT EDIT MANUALLY ===\n([\s\S]*?)# === END CCS MANAGED ENVIRONMENT ===/;
+    // 查找标记区域 (支持新旧两种标记)
+    const markerRegex = /# === (?:ESE|CCS) MANAGED ENVIRONMENT - DO NOT EDIT MANUALLY ===\n([\s\S]*?)# === END (?:ESE|CCS) MANAGED ENVIRONMENT ===/;
     const match = markerRegex.exec(content);
 
     if (!match) {
@@ -192,8 +192,8 @@ export function applyEnvironment(environment) {
   const zshrcPath = getZshrcPath();
   let content = readFileSync(zshrcPath, 'utf-8');
 
-  // 删除旧的标记区域
-  const markerRegex = /# === CCS MANAGED ENVIRONMENT - DO NOT EDIT MANUALLY ===\n[\s\S]*?# === END CCS MANAGED ENVIRONMENT ===\n?/g;
+  // 删除旧的标记区域 (支持新旧两种标记)
+  const markerRegex = /# === (?:ESE|CCS) MANAGED ENVIRONMENT - DO NOT EDIT MANUALLY ===\n[\s\S]*?# === END (?:ESE|CCS) MANAGED ENVIRONMENT ===\n?/g;
   content = content.replace(markerRegex, '');
 
   // 确保文件以换行符结束
@@ -202,11 +202,11 @@ export function applyEnvironment(environment) {
   }
 
   // 添加新的标记区域
-  const newSection = `# === CCS MANAGED ENVIRONMENT - DO NOT EDIT MANUALLY ===
+  const newSection = `# === ESE MANAGED ENVIRONMENT - DO NOT EDIT MANUALLY ===
 # Environment: ${environment.name}
 export ANTHROPIC_BASE_URL="${environment.env.ANTHROPIC_BASE_URL}"
 export ANTHROPIC_AUTH_TOKEN="${environment.env.ANTHROPIC_AUTH_TOKEN}"
-# === END CCS MANAGED ENVIRONMENT ===
+# === END ESE MANAGED ENVIRONMENT ===
 `;
 
   content += newSection;

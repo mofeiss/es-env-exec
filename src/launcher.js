@@ -41,53 +41,53 @@ function displayEnv(env) {
  */
 export function launchCommand(userCommand, environment) {
   if (!userCommand || userCommand.length === 0) {
-    console.error('错误：未提供命令');
+    console.error('Error: No command provided');
     process.exit(1);
   }
 
-  // 准备环境变量
+  // Prepare environment variables
   let env;
   if (environment === null) {
-    // 使用默认配置
+    // Use default configuration
     const defaultConfig = getDefault();
     if (!defaultConfig) {
-      console.error('错误：未设置默认环境变量 (ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN)');
-      console.log('提示：可以在 ~/.zshrc 中设置默认环境变量');
+      console.error('Error: Default environment variables not set (ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN)');
+      console.log('Tip: You can set default environment variables in ~/.zshrc');
       process.exit(1);
     }
     env = defaultConfig.env;
   } else {
-    // 使用选中的环境
+    // Use selected environment
     env = getEnvironmentEnv(environment);
   }
 
-  // 将命令数组合并为字符串
+  // Join command array into string
   const commandStr = userCommand.join(' ');
 
-  // 构建环境变量设置命令
+  // Build environment variable setup commands
   const envCommands = Object.entries(env)
     .map(([key, value]) => `export ${key}=${JSON.stringify(value)}`)
     .join(' && ');
 
-  // 构建完整命令：在命令前显式设置环境变量
-  // 这样可以确保即使 ~/.zshrc 中有 export 语句也会被覆盖
+  // Build full command: explicitly set environment variables before command
+  // This ensures that environment variables override any in ~/.zshrc
   const fullCommand = `${envCommands} && ${commandStr}`;
 
-  // 使用 zsh 交互式模式执行命令，支持 alias 和函数
-  // -i 参数确保加载 ~/.zshrc，使自定义函数和 alias 可用
+  // Use zsh interactive mode to execute command, supporting aliases and functions
+  // -i parameter ensures ~/.zshrc is loaded, making custom functions and aliases available
   const child = spawn('zsh', ['-i', '-c', fullCommand], {
     env: process.env,
     stdio: 'inherit'
   });
 
-  // 处理子进程退出
+  // Handle child process exit
   child.on('exit', (code) => {
     process.exit(code || 0);
   });
 
-  // 处理子进程错误
+  // Handle child process errors
   child.on('error', (err) => {
-    console.error(`启动命令失败: ${err.message}`);
+    console.error(`Failed to launch command: ${err.message}`);
     process.exit(1);
   });
 }

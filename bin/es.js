@@ -5,26 +5,26 @@ import { showManagementMenu } from '../src/management.js';
 import { launchCommand } from '../src/launcher.js';
 
 /**
- * 主函数
+ * Main entry point
  */
 async function main() {
   try {
-    // 获取用户传入的命令参数（跳过 node 和脚本路径）
+    // Get user command arguments (skip node and script path)
     const userCommand = process.argv.slice(2);
 
-    // 如果没有传入命令，显示管理界面
+    // If no command provided, show management interface
     if (userCommand.length === 0) {
       await showManagementMenu();
       process.exit(0);
     }
 
-    // 显示环境选择菜单
+    // Show environment selection menu
     const selectedEnvironment = await showEnvironmentMenu();
 
-    // 执行用户命令
+    // Execute user command with selected environment
     launchCommand(userCommand, selectedEnvironment);
   } catch (error) {
-    console.error(`执行出错: ${error.message}`);
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 }
