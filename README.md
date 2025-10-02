@@ -1,7 +1,24 @@
 # ESE - Environment Switch Execute
 
+**English | [简体中文](README.zh-CN.md)**
+
 [![npm version](https://img.shields.io/npm/v/env-switch-execute.svg)](https://www.npmjs.com/package/env-switch-execute)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## ⚠️ Important Notice
+
+**This is a personal project and does NOT accept collaborative development.**
+
+- ✅ **Feel free to Fork/Clone** - Modify and distribute as you wish
+- ✅ **Feel free to submit Issues** - Report bugs or suggest features
+- ❌ **NO Pull Requests accepted** - All PRs will be closed
+- ⚠️ **May force push anytime** - Local repository may `git push --force` to overwrite remote at any time
+
+**If you fork this project and make changes, DO NOT sync with the original repository to avoid conflicts.**
+
+---
 
 **Universal environment variable manager and command executor.**
 
@@ -345,13 +362,13 @@ env-switch-execute/
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+**This project does NOT accept Pull Requests.**
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+However, you are welcome to:
+- 🐛 Submit Issues to report bugs
+- 💡 Submit Issues to suggest features
+- 🔀 Fork this project and modify it yourself
+- 📦 Create derivative works based on this project
 
 ## 📝 License
 
