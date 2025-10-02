@@ -1,0 +1,23 @@
+{
+  "name": "claude-code-switcher",
+  "version": "2.0.0",
+  "description": "多环境配置管理工具",
+  "type": "module",
+  "bin": {
+    "ccs": "./bin/ccs.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "claude",
+    "cli",
+    "environment",
+    "switcher"
+  ],
+  "author": "ofeiss",
+  "license": "MIT",
+  "dependencies": {
+    "inquirer": "^8.2.6"
+  }
+}
