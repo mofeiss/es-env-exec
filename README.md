@@ -43,9 +43,7 @@ Quickly switch between multiple environment configurations and execute commands 
 npm install -g env-switch-execute
 ```
 
-After installation, two commands will be available:
-- `es` - The recommended 2-letter command (fastest to type)
-- `ese` - The 3-letter alternative command
+After installation, the `es` command will be available globally.
 
 ### Install from source
 
@@ -58,9 +56,11 @@ npm link
 
 ## 🚀 Quick Start
 
-### 1. Create your configuration file
+### 1. Configuration file
 
-On first run, create `env.json` in the installation directory:
+On first run, `~/.es.json` will be automatically created with an empty configuration.
+
+You can manually edit `~/.es.json`:
 
 ```json
 {
@@ -82,6 +82,8 @@ On first run, create `env.json` in the installation directory:
   ]
 }
 ```
+
+Or use the management mode (`es` without arguments) to add environments interactively.
 
 ### 2. Launch with environment selection
 
@@ -200,9 +202,9 @@ When set, a "default" option will appear in the environment selection menu.
 
 ### Configuration File Location
 
-After installation, create `env.json` in one of these locations:
-- Same directory as the installed package
-- Project root (if running from source)
+Configuration file: `~/.es.json` (in your home directory)
+
+This file is automatically created on first run with an empty configuration.
 
 ### Configuration Structure
 
@@ -347,15 +349,17 @@ env-switch-execute/
 │   ├── menu.js            # Interactive environment selector
 │   ├── launcher.js        # Command executor
 │   └── management.js      # Management interface
-├── env.json               # Your environments (git-ignored)
-├── env.json.example       # Configuration template
+├── .es.json.example       # Configuration template
 ├── package.json
 └── README.md
+
+User configuration:
+~/.es.json                 # Your environments (auto-created)
 ```
 
 ## 🔒 Security
 
-- **Configuration file (`env.json`) is automatically git-ignored**
+- **Configuration file (`~/.es.json`) is stored in your home directory**
 - Tokens and secrets are masked in the UI (showing only first 5 and last 5 characters)
 - Environment variables are only set for the duration of command execution
 - Persistent environments (via `.zshrc`) require manual activation

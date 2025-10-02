@@ -1,11 +1,10 @@
 {
   "name": "env-switch-execute",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Environment switcher and command executor - Manage and switch between multiple environment configurations",
   "type": "module",
   "bin": {
-    "es": "./bin/es.js",
-    "ese": "./bin/es.js"
+    "es": "./bin/es.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

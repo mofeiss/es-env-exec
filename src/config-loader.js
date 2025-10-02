@@ -1,17 +1,42 @@
-import { readFileSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { join } from 'path';
 import { homedir } from 'os';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+/**
+ * Get configuration file path
+ * @returns {string} Configuration file path
+ */
+export function getConfigPath() {
+  return join(homedir(), '.es.json');
+}
 
 /**
- * 加载配置文件
- * @returns {Object} 配置对象
+ * Initialize default configuration file
+ * @returns {Object} Default configuration object
+ */
+function initDefaultConfig() {
+  const defaultConfig = {
+    env: []
+  };
+  const configPath = getConfigPath();
+  writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf-8');
+  console.log(`Created default configuration file: ${configPath}`);
+  console.log('Use management mode (run "es" without arguments) to add environments.');
+  return defaultConfig;
+}
+
+/**
+ * Load configuration file (auto-create if not exists)
+ * @returns {Object} Configuration object
  */
 export function loadConfig() {
-  const configPath = join(__dirname, '..', 'env.json');
+  const configPath = getConfigPath();
+
+  // Auto-create default config if file doesn't exist
+  if (!existsSync(configPath)) {
+    return initDefaultConfig();
+  }
+
   const configData = readFileSync(configPath, 'utf-8');
   return JSON.parse(configData);
 }
@@ -61,14 +86,6 @@ export function getDefault() {
  */
 export function getEnvironmentEnv(environment) {
   return environment.env || {};
-}
-
-/**
- * 获取配置文件路径
- * @returns {string} 配置文件路径
- */
-export function getConfigPath() {
-  return join(__dirname, '..', 'env.json');
 }
 
 /**
