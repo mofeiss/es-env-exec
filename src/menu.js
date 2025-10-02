@@ -44,13 +44,12 @@ function formatEnvDisplay(env) {
 }
 
 /**
- * 自定义的 listRender 函数，只为选中项显示环境变量
+ * 自定义的 listRender 函数，只显示环境名称列表
  * @param {Array} choices - 选项数组
  * @param {Number} pointer - 当前选中的索引
- * @param {Map} envMap - 环境变量映射
  * @returns {String} 渲染后的字符串
  */
-function customListRender(choices, pointer, envMap) {
+function customListRender(choices, pointer) {
   let output = '';
   let separatorOffset = 0;
 
@@ -81,12 +80,6 @@ function customListRender(choices, pointer, envMap) {
     }
 
     output += line + '\n';
-
-    // 只为选中项添加环境变量显示
-    if (isSelected && envMap.has(choice.value)) {
-      const env = envMap.get(choice.value);
-      output += formatEnvDisplay(env) + '\n';
-    }
   });
 
   return output.replace(/\n$/, '');
@@ -115,9 +108,9 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
       message += chalk.cyan(this.opt.choices.getChoice(this.selected).short);
     } else {
       // 使用自定义渲染函数
-      const choicesStr = customListRender(this.opt.choices, this.selected, this.envMap);
+      const choicesStr = customListRender(this.opt.choices, this.selected);
 
-      // 计算实际索引位置（考虑多行选项）
+      // 计算实际索引位置（简化版，每个选项只占一行）
       const indexPosition = this.opt.choices.indexOf(
         this.opt.choices.getChoice(this.selected)
       );
@@ -129,26 +122,23 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
           if (value.type === 'separator') {
             return acc + 1;
           }
-
-          let l = value.name;
-          if (typeof l !== 'string') {
-            return acc + 1;
-          }
-
-          // 计算行数
-          let lines = 1;  // 选项名称占一行
-
-          // 如果是当前选中项，还要加上环境变量的行数
-          if (i === indexPosition && this.envMap.has(value.value)) {
-            const env = this.envMap.get(value.value);
-            lines += Object.keys(env).length;
-          }
-
-          return acc + lines;
+          return acc + 1;
         }, 0) - 1;
 
       message +=
         '\n' + this.paginator.paginate(choicesStr, realIndexPosition, this.opt.pageSize);
+
+      // 添加 PREVIEWED ENVIRONMENT 区域
+      const selectedChoice = this.opt.choices.getChoice(this.selected);
+      const selectedValue = selectedChoice.value;
+
+      message += '\n\n' + chalk.bold('PREVIEWED ENVIRONMENT:');
+      if (this.envMap.has(selectedValue)) {
+        const env = this.envMap.get(selectedValue);
+        message += '\n' + chalk.dim(` - ANTHROPIC_BASE_URL="${env.ANTHROPIC_BASE_URL}"`);
+        const maskedToken = formatValue(env.ANTHROPIC_AUTH_TOKEN);
+        message += '\n' + chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`);
+      }
     }
 
     this.firstRender = false;
@@ -201,7 +191,7 @@ export async function showEnvironmentMenu() {
     {
       type: 'customList',
       name: 'environment',
-      message: '请选择环境:',
+      message: 'Select environment:',
       prefix: '>',
       choices: choices,
       pageSize: 15,
