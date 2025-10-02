@@ -2,7 +2,7 @@
 
 **English | [简体中文](README.zh-CN.md)**
 
-[![npm version](https://img.shields.io/npm/v/env-switch-execute.svg)](https://www.npmjs.com/package/env-switch-execute)
+[![npm version](https://img.shields.io/npm/v/es-env-exec.svg)](https://www.npmjs.com/package/es-env-exec)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ---
@@ -40,7 +40,7 @@ Quickly switch between multiple environment configurations and execute commands 
 ### Install globally via npm
 
 ```bash
-npm install -g env-switch-execute
+npm install -g es-env-exec
 ```
 
 After installation, the `es` command will be available globally.
@@ -48,8 +48,8 @@ After installation, the `es` command will be available globally.
 ### Install from source
 
 ```bash
-git clone https://github.com/mofeiss/env-switch-execute.git
-cd env-switch-execute
+git clone https://github.com/mofeiss/es-env-exec.git
+cd es-env-exec
 npm install
 npm link
 ```
@@ -341,7 +341,7 @@ The applied environment will be marked in the management interface.
 ## 📁 Project Structure
 
 ```
-env-switch-execute/
+es-env-exec/
 ├── bin/
 │   └── es.js              # CLI entry point
 ├── src/
@@ -380,13 +380,13 @@ MIT © [mofeiss](https://github.com/mofeiss)
 
 ## 🐛 Issues
 
-Found a bug or have a feature request? Please open an issue on [GitHub](https://github.com/mofeiss/env-switch-execute/issues).
+Found a bug or have a feature request? Please open an issue on [GitHub](https://github.com/mofeiss/es-env-exec/issues).
 
 ## 📮 Links
 
-- [npm package](https://www.npmjs.com/package/env-switch-execute)
-- [GitHub repository](https://github.com/mofeiss/env-switch-execute)
-- [Changelog](https://github.com/mofeiss/env-switch-execute/releases)
+- [npm package](https://www.npmjs.com/package/es-env-exec)
+- [GitHub repository](https://github.com/mofeiss/es-env-exec)
+- [Changelog](https://github.com/mofeiss/es-env-exec/releases)
 
 ---
 

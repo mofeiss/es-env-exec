@@ -2,7 +2,7 @@
 
 **[English](README.md) | 简体中文**
 
-[![npm version](https://img.shields.io/npm/v/env-switch-execute.svg)](https://www.npmjs.com/package/env-switch-execute)
+[![npm version](https://img.shields.io/npm/v/es-env-exec.svg)](https://www.npmjs.com/package/es-env-exec)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ---
@@ -40,7 +40,7 @@
 ### 通过 npm 全局安装
 
 ```bash
-npm install -g env-switch-execute
+npm install -g es-env-exec
 ```
 
 安装后会提供 `es` 全局命令。
@@ -48,8 +48,8 @@ npm install -g env-switch-execute
 ### 从源码安装
 
 ```bash
-git clone https://github.com/mofeiss/env-switch-execute.git
-cd env-switch-execute
+git clone https://github.com/mofeiss/es-env-exec.git
+cd es-env-exec
 npm install
 npm link
 ```
@@ -341,7 +341,7 @@ api() { es curl "$@"; }
 ## 📁 项目结构
 
 ```
-env-switch-execute/
+es-env-exec/
 ├── bin/
 │   └── es.js              # CLI 入口
 ├── src/
@@ -380,13 +380,13 @@ MIT © [mofeiss](https://github.com/mofeiss)
 
 ## 🐛 问题反馈
 
-发现 bug 或有功能需求？请在 [GitHub](https://github.com/mofeiss/env-switch-execute/issues) 上提交 Issue。
+发现 bug 或有功能需求？请在 [GitHub](https://github.com/mofeiss/es-env-exec/issues) 上提交 Issue。
 
 ## 📮 链接
 
-- [npm 包](https://www.npmjs.com/package/env-switch-execute)
-- [GitHub 仓库](https://github.com/mofeiss/env-switch-execute)
-- [更新日志](https://github.com/mofeiss/env-switch-execute/releases)
+- [npm 包](https://www.npmjs.com/package/es-env-exec)
+- [GitHub 仓库](https://github.com/mofeiss/es-env-exec)
+- [更新日志](https://github.com/mofeiss/es-env-exec/releases)
 
 ---
 

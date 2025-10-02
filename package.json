@@ -1,6 +1,6 @@
 {
-  "name": "env-switch-execute",
-  "version": "1.0.1",
+  "name": "es-env-exec",
+  "version": "1.0.0",
   "description": "Environment switcher and command executor - Manage and switch between multiple environment configurations",
   "type": "module",
   "bin": {
@@ -22,11 +22,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mofeiss/env-switch-execute.git"
+    "url": "git+https://github.com/mofeiss/es-env-exec.git"
   },
-  "homepage": "https://github.com/mofeiss/env-switch-execute#readme",
+  "homepage": "https://github.com/mofeiss/es-env-exec#readme",
   "bugs": {
-    "url": "https://github.com/mofeiss/env-switch-execute/issues"
+    "url": "https://github.com/mofeiss/es-env-exec/issues"
   },
   "dependencies": {
     "inquirer": "^8.2.6",
