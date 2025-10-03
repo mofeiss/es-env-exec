@@ -35,6 +35,7 @@ Quickly switch between multiple environment configurations and execute commands 
   - **Management Mode** (`es`) - Full-featured environment configuration manager
 - 💾 **Persistent Configuration** - Apply environment to `.zshrc` for persistent use
 - 🔍 **Environment Inspector** - `envs` command to quickly check both runtime (temporary) and applied (global) environments
+- 🧠 **Smart History** - Automatically remembers your last environment choice per directory/command
 
 ## 📦 Installation
 
@@ -104,6 +105,41 @@ APPLIED ENVIRONMENT (Global):
 - ✅ Confirm temporary environment overrides
 - ✅ Compare runtime vs global settings
 - ✅ Debug environment variable issues
+
+## 🧠 Smart History
+
+ESE automatically remembers which environment you used for each command in each directory.
+
+**How it works:**
+
+When you run `es <command>` and select an environment, ESE saves this choice to `~/.config/es/history.json`. The next time you run the same command in the same directory, the cursor will automatically position to your last selection.
+
+**Example workflow:**
+
+```bash
+# First time in ~/myproject
+$ es claude
+> Select environment: (cursor on 'default')
+  > default
+    production
+    staging
+
+# You select 'staging'
+# ESE remembers: ~/myproject + claude → staging
+
+# Next time in ~/myproject
+$ es claude
+> Select environment: (cursor automatically on 'staging')
+    default
+  > staging    # ← Cursor here!
+    production
+```
+
+**Smart behavior:**
+- ✅ Remembers per directory + command combination
+- ✅ Selecting `default` clears the history for that command
+- ✅ Auto-cleanup when environment is deleted
+- ✅ No history tracking for management mode (`es` without arguments)
 
 ## 🚀 Quick Start
 
@@ -400,13 +436,15 @@ es-env-exec/
 │   ├── config-loader.js   # Configuration management
 │   ├── menu.js            # Interactive environment selector
 │   ├── launcher.js        # Command executor
-│   └── management.js      # Management interface
+│   ├── management.js      # Management interface
+│   └── history.js         # History tracking
 ├── .es.json.example       # Configuration template
 ├── package.json
 └── README.md
 
 User configuration:
 ~/.es.json                 # Your environments (auto-created)
+~/.config/es/history.json  # Command history (auto-created)
 ```
 
 ## 🔒 Security

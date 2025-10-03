@@ -35,6 +35,7 @@
   - **管理模式** (`es`) - 功能完整的环境配置管理器
 - 💾 **持久化配置** - 将环境应用到 `.zshrc` 以持久使用
 - 🔍 **环境变量检查器** - `envs` 命令快速查看运行时（临时）和应用的（全局）环境变量
+- 🧠 **智能历史记录** - 自动记住每个目录/命令的上次环境选择
 
 ## 📦 安装
 
@@ -104,6 +105,41 @@ APPLIED ENVIRONMENT (Global):
 - ✅ 确认临时环境变量是否正确覆盖
 - ✅ 对比运行时和全局设置
 - ✅ 调试环境变量问题
+
+## 🧠 智能历史记录
+
+ESE 会自动记住你在每个目录执行每个命令时使用的环境。
+
+**工作原理：**
+
+当你运行 `es <command>` 并选择一个环境时，ESE 会将这个选择保存到 `~/.config/es/history.json`。下次在同一目录运行相同命令时，光标会自动定位到你上次的选择。
+
+**示例流程：**
+
+```bash
+# 第一次在 ~/myproject 目录
+$ es claude
+> Select environment: (光标在 'default')
+  > default
+    production
+    staging
+
+# 你选择了 'staging'
+# ESE 记住了：~/myproject + claude → staging
+
+# 下次在 ~/myproject 目录
+$ es claude
+> Select environment: (光标自动在 'staging')
+    default
+  > staging    # ← 光标在这里！
+    production
+```
+
+**智能行为：**
+- ✅ 按目录+命令组合记忆
+- ✅ 选择 `default` 会清除该命令的历史记录
+- ✅ 环境被删除时自动清理
+- ✅ 管理模式（`es` 无参数）不记录历史
 
 ## 🚀 快速开始
 
@@ -400,13 +436,15 @@ es-env-exec/
 │   ├── config-loader.js   # 配置管理
 │   ├── menu.js            # 交互式环境选择器
 │   ├── launcher.js        # 命令执行器
-│   └── management.js      # 管理界面
+│   ├── management.js      # 管理界面
+│   └── history.js         # 历史记录追踪
 ├── .es.json.example       # 配置模板
 ├── package.json
 └── README.md
 
 用户配置：
 ~/.es.json                 # 你的环境（自动创建）
+~/.config/es/history.json  # 命令历史（自动创建）
 ```
 
 ## 🔒 安全性

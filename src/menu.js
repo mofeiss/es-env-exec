@@ -2,6 +2,7 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import figures from 'figures';
 import { getEnvironments, getDefault, getAppliedEnvironment } from './config-loader.js';
+import { getLastEnv, recordEnv } from './history.js';
 
 // ANSI 颜色代码
 const DIM = '\x1b[2m';      // 弱化颜色
@@ -151,9 +152,10 @@ inquirer.registerPrompt('customList', CustomListPrompt);
 
 /**
  * 显示环境选择菜单
+ * @param {Array} userCommand - 用户命令数组
  * @returns {Promise<Object|null>} 选择的环境对象，或 null（选择 default）
  */
-export async function showEnvironmentMenu() {
+export async function showEnvironmentMenu(userCommand = []) {
   const environments = getEnvironments();
   const defaultConfig = getDefault();
 
@@ -186,6 +188,28 @@ export async function showEnvironmentMenu() {
     envMap.set(environment, environment.env);
   });
 
+  // 获取上次使用的环境名（用于设置光标位置）
+  const commandName = userCommand[0]; // 取第一个参数作为命令
+  const lastEnvName = commandName ? getLastEnv(commandName) : null;
+
+  // 计算初始光标位置
+  let defaultIndex = 0; // 默认选中第一项（default）
+
+  if (lastEnvName) {
+    // 查找环境是否存在
+    const envIndex = choices.findIndex(c =>
+      c.value && c.value.name === lastEnvName
+    );
+
+    if (envIndex !== -1) {
+      // 找到了，设置光标位置
+      defaultIndex = envIndex;
+    } else {
+      // 环境不存在，删除历史记录
+      recordEnv(commandName, 'default');
+    }
+  }
+
   // 显示 APPLIED ENVIRONMENT
   const appliedEnv = getAppliedEnvironment();
   if (appliedEnv) {
@@ -206,9 +230,10 @@ export async function showEnvironmentMenu() {
     {
       type: 'customList',
       name: 'environment',
-      message: 'Select environment:',
+      message: 'SELECT ENVIRONMENTS:',
       prefix: '>',
       choices: choices,
+      default: defaultIndex,  // 设置初始光标位置
       pageSize: 15,
       envMap: envMap  // 传递环境变量映射
     }
@@ -218,6 +243,11 @@ export async function showEnvironmentMenu() {
   const selectedEnvironment = answer.environment;
   const environmentName = selectedEnvironment === null ? 'default' : selectedEnvironment.name;
   const env = selectedEnvironment === null ? defaultConfig.env : selectedEnvironment.env;
+
+  // 记录用户选择到历史（只记录非 default 的选择）
+  if (commandName) {
+    recordEnv(commandName, environmentName);
+  }
 
   // 清除 inquirer 的确认输出行（只有一行："> 请选择环境: 选项名"）
   // 向上移动一行并清除

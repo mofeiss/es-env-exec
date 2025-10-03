@@ -922,7 +922,7 @@ export async function showManagementMenu() {
     {
       type: 'managementList',
       name: 'result',
-      message: 'Select environment:',
+      message: 'SELECT ENVIRONMENTS:',
       prefix: '>',
       choices: choices,
       pageSize: 15,
