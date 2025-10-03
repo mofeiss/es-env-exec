@@ -71,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2025-10-02
 
-### Initial Release
+### 初始版本 (Initial Release)
 - 🚀 环境变量快速切换功能
 - 🔐 安全的环境变量管理（令牌自动脱敏显示）
 - 🎯 通用 CLI 工具兼容性
@@ -83,6 +83,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ❌ 删除环境功能
 - ✏️ 终端/GUI 编辑器支持
 - 🔃 配置热重载
+
+---
+
+### Initial Release
+- 🚀 Fast environment variable switching
+- 🔐 Secure variable management (tokens auto-masked in display)
+- 🎯 Universal CLI tool compatibility
+- 📝 Simple JSON configuration file
+- 🎨 Dual interface modes: Quick launch and management mode
+- 💾 Persistent configuration to `.zshrc`
+- 🔄 Environment enable/disable toggle
+- ➕ Interactive environment addition
+- ❌ Delete environment functionality
+- ✏️ Terminal/GUI editor support
+- 🔃 Configuration hot reload
 
 ---
 
