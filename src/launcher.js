@@ -47,6 +47,7 @@ export function launchCommand(userCommand, environment) {
 
   // Prepare environment variables
   let env;
+  let environmentName;
   if (environment === null) {
     // Use default configuration
     const defaultConfig = getDefault();
@@ -56,22 +57,34 @@ export function launchCommand(userCommand, environment) {
       process.exit(1);
     }
     env = defaultConfig.env;
+    environmentName = 'default';
   } else {
     // Use selected environment
     env = getEnvironmentEnv(environment);
+    environmentName = environment.name;
   }
 
   // Join command array into string
   const commandStr = userCommand.join(' ');
+
+  // Build runtime environment marker (用于 envs 命令识别临时环境变量)
+  const runtimeEnvMarker = {
+    name: environmentName,
+    env: env
+  };
+  const runtimeEnvJson = JSON.stringify(runtimeEnvMarker);
 
   // Build environment variable setup commands
   const envCommands = Object.entries(env)
     .map(([key, value]) => `export ${key}=${JSON.stringify(value)}`)
     .join(' && ');
 
+  // Add runtime environment marker
+  const markerCommand = `export ESE_RUNTIME_ENV=${JSON.stringify(runtimeEnvJson)}`;
+
   // Build full command: explicitly set environment variables before command
   // This ensures that environment variables override any in ~/.zshrc
-  const fullCommand = `${envCommands} && ${commandStr}`;
+  const fullCommand = `${envCommands} && ${markerCommand} && ${commandStr}`;
 
   // Use zsh interactive mode to execute command, supporting aliases and functions
   // -i parameter ensures ~/.zshrc is loaded, making custom functions and aliases available

@@ -34,6 +34,7 @@
   - **快速启动** (`es <command>`) - 一步选择环境并执行
   - **管理模式** (`es`) - 功能完整的环境配置管理器
 - 💾 **持久化配置** - 将环境应用到 `.zshrc` 以持久使用
+- 🔍 **环境变量检查器** - `envs` 命令快速查看运行时（临时）和应用的（全局）环境变量
 
 ## 📦 安装
 
@@ -43,7 +44,7 @@
 npm install -g es-env-exec
 ```
 
-安装后会提供 `es` 全局命令。
+安装后会提供 `es` 和 `envs` 全局命令。
 
 ### 从源码安装
 
@@ -53,6 +54,56 @@ cd es-env-exec
 npm install
 npm link
 ```
+
+## 🔎 快速环境检查
+
+使用 `envs` 命令快速查看当前的环境变量配置：
+
+```bash
+envs
+```
+
+**显示内容取决于应用的启动方式：**
+
+### 场景 1：直接执行（使用全局环境变量）
+
+当你直接运行命令时，`envs` 只显示从 `~/.zshrc` 读取的全局环境变量：
+
+```bash
+$ claude
+# 在 Claude Code 中执行：
+> envs
+APPLIED ENVIRONMENT (Global):
+ - NAME production
+ - ANTHROPIC_BASE_URL="https://api.anthropic.com"
+ - ANTHROPIC_AUTH_TOKEN="sk-an...xxx"
+```
+
+### 场景 2：通过 `es` 命令启动（临时环境变量）
+
+当你使用 `es` 启动并选择特定环境时，`envs` 会同时显示两种环境变量：
+
+```bash
+$ es claude
+# 选择 "staging" 环境
+# 在 Claude Code 中执行：
+> envs
+RUNTIME ENVIRONMENT (Temporary):
+ - NAME staging
+ - ANTHROPIC_BASE_URL="https://api.staging.com"
+ - ANTHROPIC_AUTH_TOKEN="sk-st...yyy"
+
+APPLIED ENVIRONMENT (Global):
+ - NAME production
+ - ANTHROPIC_BASE_URL="https://api.anthropic.com"
+ - ANTHROPIC_AUTH_TOKEN="sk-an...xxx"
+```
+
+**这个功能帮助你：**
+- ✅ 验证当前激活的环境配置
+- ✅ 确认临时环境变量是否正确覆盖
+- ✅ 对比运行时和全局设置
+- ✅ 调试环境变量问题
 
 ## 🚀 快速开始
 
@@ -343,7 +394,8 @@ api() { es curl "$@"; }
 ```
 es-env-exec/
 ├── bin/
-│   └── es.js              # CLI 入口
+│   ├── es.js              # CLI 入口
+│   └── envs.js            # 环境变量检查器
 ├── src/
 │   ├── config-loader.js   # 配置管理
 │   ├── menu.js            # 交互式环境选择器

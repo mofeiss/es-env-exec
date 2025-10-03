@@ -34,6 +34,7 @@ Quickly switch between multiple environment configurations and execute commands 
   - **Quick Launch** (`es <command>`) - Select environment and execute in one step
   - **Management Mode** (`es`) - Full-featured environment configuration manager
 - 💾 **Persistent Configuration** - Apply environment to `.zshrc` for persistent use
+- 🔍 **Environment Inspector** - `envs` command to quickly check both runtime (temporary) and applied (global) environments
 
 ## 📦 Installation
 
@@ -43,7 +44,7 @@ Quickly switch between multiple environment configurations and execute commands 
 npm install -g es-env-exec
 ```
 
-After installation, the `es` command will be available globally.
+After installation, the `es` and `envs` commands will be available globally.
 
 ### Install from source
 
@@ -53,6 +54,56 @@ cd es-env-exec
 npm install
 npm link
 ```
+
+## 🔎 Quick Environment Check
+
+Use the `envs` command to quickly check your current environment variables:
+
+```bash
+envs
+```
+
+**What you'll see depends on how you launched your application:**
+
+### Scenario 1: Direct execution (using global environment)
+
+When you run a command directly, `envs` shows only the global environment from `~/.zshrc`:
+
+```bash
+$ claude
+# Inside Claude Code:
+> envs
+APPLIED ENVIRONMENT (Global):
+ - NAME production
+ - ANTHROPIC_BASE_URL="https://api.anthropic.com"
+ - ANTHROPIC_AUTH_TOKEN="sk-an...xxx"
+```
+
+### Scenario 2: Launched via `es` command (temporary environment)
+
+When you use `es` to launch with a specific environment, `envs` shows both:
+
+```bash
+$ es claude
+# Select "staging" environment
+# Inside Claude Code:
+> envs
+RUNTIME ENVIRONMENT (Temporary):
+ - NAME staging
+ - ANTHROPIC_BASE_URL="https://api.staging.com"
+ - ANTHROPIC_AUTH_TOKEN="sk-st...yyy"
+
+APPLIED ENVIRONMENT (Global):
+ - NAME production
+ - ANTHROPIC_BASE_URL="https://api.anthropic.com"
+ - ANTHROPIC_AUTH_TOKEN="sk-an...xxx"
+```
+
+**This helps you:**
+- ✅ Verify which environment is currently active
+- ✅ Confirm temporary environment overrides
+- ✅ Compare runtime vs global settings
+- ✅ Debug environment variable issues
 
 ## 🚀 Quick Start
 
@@ -343,7 +394,8 @@ The applied environment will be marked in the management interface.
 ```
 es-env-exec/
 ├── bin/
-│   └── es.js              # CLI entry point
+│   ├── es.js              # CLI entry point
+│   └── envs.js            # Environment inspector
 ├── src/
 │   ├── config-loader.js   # Configuration management
 │   ├── menu.js            # Interactive environment selector

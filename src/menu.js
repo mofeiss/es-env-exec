@@ -1,7 +1,7 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import figures from 'figures';
-import { getEnvironments, getDefault } from './config-loader.js';
+import { getEnvironments, getDefault, getAppliedEnvironment } from './config-loader.js';
 
 // ANSI 颜色代码
 const DIM = '\x1b[2m';      // 弱化颜色
@@ -185,6 +185,21 @@ export async function showEnvironmentMenu() {
     });
     envMap.set(environment, environment.env);
   });
+
+  // 显示 APPLIED ENVIRONMENT
+  const appliedEnv = getAppliedEnvironment();
+  if (appliedEnv) {
+    console.log(chalk.bold('APPLIED ENVIRONMENT:'));
+    console.log(chalk.dim(` - NAME ${appliedEnv.name}`));
+    console.log(chalk.dim(` - ANTHROPIC_BASE_URL="${appliedEnv.env.ANTHROPIC_BASE_URL}"`));
+    const maskedToken = formatValue(appliedEnv.env.ANTHROPIC_AUTH_TOKEN);
+    console.log(chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`));
+    console.log('');
+  } else {
+    console.log(chalk.bold('APPLIED ENVIRONMENT:'));
+    console.log(chalk.dim(' - None'));
+    console.log('');
+  }
 
   // 显示交互式菜单
   const answer = await inquirer.prompt([
