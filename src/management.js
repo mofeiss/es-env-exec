@@ -91,9 +91,10 @@ function formatEnvDisplay(env) {
  * @param {Array} choices - 选项数组
  * @param {Number} pointer - 当前选中的索引
  * @param {Map} envMap - 环境变量映射
+ * @param {String|null} appliedEnvName - APPLIED ENVIRONMENT 名称
  * @returns {String} 渲染后的字符串
  */
-function customManagementRender(choices, pointer, envMap) {
+function customManagementRender(choices, pointer, envMap, appliedEnvName) {
   let output = '';
   let separatorOffset = 0;
 
@@ -107,16 +108,24 @@ function customManagementRender(choices, pointer, envMap) {
     const isSelected = i - separatorOffset === pointer;
     const environment = choice.value;
     const isEnabled = !environment.disable || environment.disable === 0;
+    const isApplied = choice.name === appliedEnvName;
 
     // 状态图标：[✔] 或 [✘]
     const statusIcon = isEnabled ? `${GREEN}[✔]${RESET}` : `${RED}[✘]${RESET}`;
 
-    // 使用 > 而不是 ❯
-    let line = (isSelected ? '> ' : '  ') + statusIcon + ' ' + choice.name;
+    // 前缀
+    const prefix = isSelected ? '> ' : '  ';
 
+    // 环境名称（应用颜色）
+    let envName = choice.name;
     if (isSelected) {
-      line = chalk.cyan(line);
+      envName = chalk.cyan(envName);
+    } else if (isApplied) {
+      envName = chalk.yellow(envName);
     }
+
+    // 组合成最终的行
+    let line = prefix + statusIcon + ' ' + envName;
 
     output += line + '\n';
   });
@@ -131,6 +140,7 @@ class ManagementListPrompt extends inquirer.prompt.prompts.list {
   constructor(questions, rl, answers) {
     super(questions, rl, answers);
     this.envMap = questions.envMap || new Map();
+    this.appliedEnvName = questions.appliedEnvName || null; // 保存 APPLIED ENVIRONMENT 名称
     this.applyInProgress = false; // 标记 APPLY 操作是否正在进行
   }
 
@@ -692,7 +702,7 @@ class ManagementListPrompt extends inquirer.prompt.prompts.list {
     if (this.status === 'answered') {
       message += chalk.cyan(this.opt.choices.getChoice(this.selected).short);
     } else {
-      const choicesStr = customManagementRender(this.opt.choices, this.selected, this.envMap);
+      const choicesStr = customManagementRender(this.opt.choices, this.selected, this.envMap, this.appliedEnvName);
 
       const indexPosition = this.opt.choices.indexOf(
         this.opt.choices.getChoice(this.selected)
@@ -902,6 +912,20 @@ export async function showManagementMenu() {
 
   // 显示 APPLIED ENVIRONMENT
   const appliedEnv = getAppliedEnvironment();
+
+  // 计算初始光标位置
+  let defaultIndex = 0; // 默认选中第一项
+
+  if (appliedEnv) {
+    // 如果有 APPLIED ENVIRONMENT，定位到该环境
+    const envIndex = choices.findIndex(c =>
+      c.value && c.value.name === appliedEnv.name
+    );
+    if (envIndex !== -1) {
+      defaultIndex = envIndex;
+    }
+  }
+
   if (appliedEnv) {
     console.log(chalk.bold('APPLIED ENVIRONMENT:'));
     console.log(chalk.dim(` - NAME ${appliedEnv.name}`));
@@ -925,8 +949,10 @@ export async function showManagementMenu() {
       message: 'SELECT ENVIRONMENTS:',
       prefix: '>',
       choices: choices,
+      default: defaultIndex,  // 设置初始光标位置
       pageSize: 15,
-      envMap: envMap
+      envMap: envMap,
+      appliedEnvName: appliedEnv ? appliedEnv.name : null  // 传递 APPLIED ENVIRONMENT 名称
     }
   ]);
 

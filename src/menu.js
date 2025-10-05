@@ -48,9 +48,10 @@ function formatEnvDisplay(env) {
  * 自定义的 listRender 函数，只显示环境名称列表
  * @param {Array} choices - 选项数组
  * @param {Number} pointer - 当前选中的索引
+ * @param {String|null} appliedEnvName - APPLIED ENVIRONMENT 名称
  * @returns {String} 渲染后的字符串
  */
-function customListRender(choices, pointer) {
+function customListRender(choices, pointer, appliedEnvName) {
   let output = '';
   let separatorOffset = 0;
 
@@ -72,12 +73,15 @@ function customListRender(choices, pointer) {
     }
 
     const isSelected = i - separatorOffset === pointer;
+    const isApplied = choice.name === appliedEnvName;
 
     // 使用 > 而不是 ❯
     let line = (isSelected ? '> ' : '  ') + choice.name;
 
     if (isSelected) {
       line = chalk.cyan(line);
+    } else if (isApplied) {
+      line = chalk.yellow(line);
     }
 
     output += line + '\n';
@@ -94,6 +98,8 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
     super(questions, rl, answers);
     // 保存环境变量映射
     this.envMap = questions.envMap || new Map();
+    // 保存 APPLIED ENVIRONMENT 名称
+    this.appliedEnvName = questions.appliedEnvName || null;
   }
 
   render() {
@@ -109,7 +115,7 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
       message += chalk.cyan(this.opt.choices.getChoice(this.selected).short);
     } else {
       // 使用自定义渲染函数
-      const choicesStr = customListRender(this.opt.choices, this.selected);
+      const choicesStr = customListRender(this.opt.choices, this.selected, this.appliedEnvName);
 
       // 计算实际索引位置（简化版，每个选项只占一行）
       const indexPosition = this.opt.choices.indexOf(
@@ -188,30 +194,47 @@ export async function showEnvironmentMenu(userCommand = []) {
     envMap.set(environment, environment.env);
   });
 
-  // 获取上次使用的环境名（用于设置光标位置）
-  const commandName = userCommand[0]; // 取第一个参数作为命令
-  const lastEnvName = commandName ? getLastEnv(commandName) : null;
+  // 获取 APPLIED ENVIRONMENT（用于光标定位和醒目显示）
+  const appliedEnv = getAppliedEnvironment();
 
   // 计算初始光标位置
+  // 优先级：APPLIED ENVIRONMENT > 历史记录 > default
   let defaultIndex = 0; // 默认选中第一项（default）
 
-  if (lastEnvName) {
-    // 查找环境是否存在
-    const envIndex = choices.findIndex(c =>
-      c.value && c.value.name === lastEnvName
-    );
-
-    if (envIndex !== -1) {
-      // 找到了，设置光标位置
-      defaultIndex = envIndex;
+  if (appliedEnv) {
+    // 如果有 APPLIED ENVIRONMENT，优先定位到该环境
+    if (appliedEnv.name === 'default') {
+      defaultIndex = 0;
     } else {
-      // 环境不存在，删除历史记录
-      recordEnv(commandName, 'default');
+      const envIndex = choices.findIndex(c =>
+        c.value && c.value.name === appliedEnv.name
+      );
+      if (envIndex !== -1) {
+        defaultIndex = envIndex;
+      }
+    }
+  } else {
+    // 如果没有 APPLIED ENVIRONMENT，使用历史记录
+    const commandName = userCommand[0]; // 取第一个参数作为命令
+    const lastEnvName = commandName ? getLastEnv(commandName) : null;
+
+    if (lastEnvName) {
+      // 查找环境是否存在
+      const envIndex = choices.findIndex(c =>
+        c.value && c.value.name === lastEnvName
+      );
+
+      if (envIndex !== -1) {
+        // 找到了，设置光标位置
+        defaultIndex = envIndex;
+      } else {
+        // 环境不存在，删除历史记录
+        recordEnv(commandName, 'default');
+      }
     }
   }
 
   // 显示 APPLIED ENVIRONMENT
-  const appliedEnv = getAppliedEnvironment();
   if (appliedEnv) {
     console.log(chalk.bold('APPLIED ENVIRONMENT:'));
     console.log(chalk.dim(` - NAME ${appliedEnv.name}`));
@@ -235,7 +258,8 @@ export async function showEnvironmentMenu(userCommand = []) {
       choices: choices,
       default: defaultIndex,  // 设置初始光标位置
       pageSize: 15,
-      envMap: envMap  // 传递环境变量映射
+      envMap: envMap,  // 传递环境变量映射
+      appliedEnvName: appliedEnv ? appliedEnv.name : null  // 传递 APPLIED ENVIRONMENT 名称
     }
   ]);
 
