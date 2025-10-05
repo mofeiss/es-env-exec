@@ -25,11 +25,9 @@ const RESET = '\x1b[0m';
 function forceClearScreen() {
   // 1. 清除整个屏幕
   process.stdout.write('\x1b[2J');
-  // 2. 清除滚动缓冲区
-  process.stdout.write('\x1b[3J');
-  // 3. 重置光标到左上角
+  // 2. 重置光标到左上角
   process.stdout.write('\x1b[H');
-  // 4. 确保刷新输出
+  // 3. 确保刷新输出
   if (process.stdout.isTTY) {
     process.stdout.cursorTo(0, 0);
     process.stdout.clearScreenDown();
@@ -729,6 +727,7 @@ class ManagementListPrompt extends inquirer.prompt.prompts.list {
       message += '\n\n' + chalk.bold('PREVIEWED ENVIRONMENT:');
       if (this.envMap.has(environment)) {
         const env = this.envMap.get(environment);
+        message += '\n' + chalk.dim(` - NAME ${environment.name}`);
         message += '\n' + chalk.dim(` - ANTHROPIC_BASE_URL="${env.ANTHROPIC_BASE_URL}"`);
         const maskedToken = formatValue(env.ANTHROPIC_AUTH_TOKEN);
         message += '\n' + chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`);

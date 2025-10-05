@@ -142,6 +142,18 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
       message += '\n\n' + chalk.bold('PREVIEWED ENVIRONMENT:');
       if (this.envMap.has(selectedValue)) {
         const env = this.envMap.get(selectedValue);
+        let environmentName;
+
+        if (selectedValue === null) {
+          // applied environment - 从选择名称中提取
+          environmentName = selectedChoice.name.replace(/^applied environment \(([^)]+)\).*$/, '$1');
+        } else if (selectedValue === 'system-default') {
+          environmentName = 'default (system env)';
+        } else {
+          environmentName = selectedValue.name;
+        }
+
+        message += '\n' + chalk.dim(` - NAME ${environmentName}`);
         message += '\n' + chalk.dim(` - ANTHROPIC_BASE_URL="${env.ANTHROPIC_BASE_URL}"`);
         const maskedToken = formatValue(env.ANTHROPIC_AUTH_TOKEN);
         message += '\n' + chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`);
@@ -162,24 +174,43 @@ inquirer.registerPrompt('customList', CustomListPrompt);
  * @returns {Promise<Object|null>} 选择的环境对象，或 null（选择 default）
  */
 export async function showEnvironmentMenu(userCommand = []) {
+  // 清屏并重置光标到顶部
+  process.stdout.write('\x1b[2J'); // 清除整个屏幕
+  process.stdout.write('\x1b[H');  // 重置光标到左上角
+  if (process.stdout.isTTY) {
+    process.stdout.cursorTo(0, 0);
+    process.stdout.clearScreenDown();
+  }
+
   const environments = getEnvironments();
   const defaultConfig = getDefault();
+
+  // 获取 APPLIED ENVIRONMENT（用于光标定位和醒目显示）
+  const appliedEnv = getAppliedEnvironment();
 
   // 构建选择列表和环境变量映射
   const choices = [];
   const envMap = new Map();
 
-  // 添加 default 选项到第一位
-  if (defaultConfig) {
-    const defaultValue = null;  // null 表示使用默认配置
+  // 添加 applied environment 选项到第一位
+  if (appliedEnv) {
+    // 使用当前应用的环境作为"默认"选项
     choices.push({
-      name: 'default',
-      value: defaultValue
+      name: `applied environment (${appliedEnv.name})`,
+      value: null  // null 表示使用应用的环境
     });
-    envMap.set(defaultValue, defaultConfig.env);
-  } else {
+    envMap.set(null, appliedEnv.env);
+  } else if (defaultConfig) {
+    // 如果没有应用的环境但有系统环境变量，使用系统环境变量
     choices.push({
-      name: 'default',
+      name: 'default (system env)',
+      value: 'system-default'
+    });
+    envMap.set('system-default', defaultConfig.env);
+  } else {
+    // 都没有的情况
+    choices.push({
+      name: 'default (not configured)',
       value: null
     });
     envMap.set(null, { message: '!!! 未配置' });
@@ -194,25 +225,13 @@ export async function showEnvironmentMenu(userCommand = []) {
     envMap.set(environment, environment.env);
   });
 
-  // 获取 APPLIED ENVIRONMENT（用于光标定位和醒目显示）
-  const appliedEnv = getAppliedEnvironment();
-
   // 计算初始光标位置
   // 优先级：APPLIED ENVIRONMENT > 历史记录 > default
   let defaultIndex = 0; // 默认选中第一项（default）
 
+  // 如果有 APPLIED ENVIRONMENT，默认选中第一个选项（applied environment）
   if (appliedEnv) {
-    // 如果有 APPLIED ENVIRONMENT，优先定位到该环境
-    if (appliedEnv.name === 'default') {
-      defaultIndex = 0;
-    } else {
-      const envIndex = choices.findIndex(c =>
-        c.value && c.value.name === appliedEnv.name
-      );
-      if (envIndex !== -1) {
-        defaultIndex = envIndex;
-      }
-    }
+    defaultIndex = 0;
   } else {
     // 如果没有 APPLIED ENVIRONMENT，使用历史记录
     const commandName = userCommand[0]; // 取第一个参数作为命令
@@ -234,6 +253,8 @@ export async function showEnvironmentMenu(userCommand = []) {
     }
   }
 
+  console.log(chalk.cyan.bold('\n⚙ ENVIRONMENT CONFIGURATION MANAGER ⚙\n'));
+
   // 显示 APPLIED ENVIRONMENT
   if (appliedEnv) {
     console.log(chalk.bold('APPLIED ENVIRONMENT:'));
@@ -248,12 +269,15 @@ export async function showEnvironmentMenu(userCommand = []) {
     console.log('');
   }
 
+  console.log(chalk.bold('> AVAILABLE ENVIRONMENTS:'));
+  console.log(chalk.dim('Select a temporary environment to use for this command:'));
+
   // 显示交互式菜单
   const answer = await inquirer.prompt([
     {
       type: 'customList',
       name: 'environment',
-      message: 'SELECT ENVIRONMENTS:',
+      message: '>',
       prefix: '>',
       choices: choices,
       default: defaultIndex,  // 设置初始光标位置
@@ -265,11 +289,25 @@ export async function showEnvironmentMenu(userCommand = []) {
 
   // 获取选中的环境名称和环境变量
   const selectedEnvironment = answer.environment;
-  const environmentName = selectedEnvironment === null ? 'default' : selectedEnvironment.name;
-  const env = selectedEnvironment === null ? defaultConfig.env : selectedEnvironment.env;
+  const commandName = userCommand[0]; // 获取命令名用于历史记录
+  let environmentName, env;
 
-  // 记录用户选择到历史（只记录非 default 的选择）
-  if (commandName) {
+  if (selectedEnvironment === null) {
+    // 选择了 applied environment
+    environmentName = appliedEnv ? appliedEnv.name : 'default';
+    env = appliedEnv ? appliedEnv.env : (defaultConfig ? defaultConfig.env : null);
+  } else if (selectedEnvironment === 'system-default') {
+    // 选择了系统默认环境
+    environmentName = 'default';
+    env = defaultConfig.env;
+  } else {
+    // 选择了具体的环境
+    environmentName = selectedEnvironment.name;
+    env = selectedEnvironment.env;
+  }
+
+  // 记录用户选择到历史（只记录非 applied environment 和 default 的选择）
+  if (commandName && selectedEnvironment !== null && selectedEnvironment !== 'system-default') {
     recordEnv(commandName, environmentName);
   }
 
@@ -283,5 +321,15 @@ export async function showEnvironmentMenu(userCommand = []) {
   const envDisplay = formatEnvDisplay(env);
   console.log(`> ${CYAN}${environmentName}${RESET}\n${envDisplay}`);
 
-  return selectedEnvironment;
+  // 返回正确的环境对象供launcher使用
+  if (selectedEnvironment === null) {
+    // 返回applied environment对象
+    return appliedEnv;
+  } else if (selectedEnvironment === 'system-default') {
+    // 返回null表示使用系统默认环境
+    return null;
+  } else {
+    // 返回选择的环境对象
+    return selectedEnvironment;
+  }
 }
