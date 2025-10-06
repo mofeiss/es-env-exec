@@ -477,7 +477,7 @@ Found a bug or have a feature request? Please open an issue on [GitHub](https://
 
 - [npm package](https://www.npmjs.com/package/es-env-exec)
 - [GitHub repository](https://github.com/mofeiss/es-env-exec)
-- [Changelog](https://github.com/mofeiss/es-env-exec/releases)
+- [Changelog](https://github.com/mofeiss/es-env-exec/blob/main/CHANGELOG.md)
 
 ---
 

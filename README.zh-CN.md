@@ -477,7 +477,7 @@ MIT © [mofeiss](https://github.com/mofeiss)
 
 - [npm 包](https://www.npmjs.com/package/es-env-exec)
 - [GitHub 仓库](https://github.com/mofeiss/es-env-exec)
-- [更新日志](https://github.com/mofeiss/es-env-exec/releases)
+- [更新日志](https://github.com/mofeiss/es-env-exec/blob/main/CHANGELOG.md)
 
 ---
 
