@@ -242,22 +242,17 @@ es
 **管理界面：**
 
 ```
-⚙ ENVIRONMENT CONFIGURATION MANAGER ⚙
+ENVIRONMENT CONFIGURATION MANAGER
 
-APPLIED ENVIRONMENT:
+> SELECT GLOBAL ENVIRONMENTS: (Use arrow keys)
+
  - NAME production
  - API_BASE_URL="https://api.production.com"
  - API_TOKEN="prod-...here"
 
-> AVAILABLE ENVIRONMENTS:
-> Select environment: (Use arrow keys)
-> [✔] production
+> [✔] production (GLOBAL)
   [✔] staging
   [✘] development
-
-PREVIEWED ENVIRONMENT:
- - API_BASE_URL="https://api.production.com"
- - API_TOKEN="prod-...here"
 
 [⎵]TOGGLE  [D]DEL  [A]ADD  [E]EDIT  [G]GUI  [R]RELOAD  [⏎]APPLY  [Q]QUIT
 ```

@@ -5,6 +5,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-10-06
+
+### 界面改进 (Improved)
+- 🎨 **重设计两个界面的布局和颜色方案**
+  - **ES 管理界面 (`es`)：**
+    - 标题简化为 `ENVIRONMENT CONFIGURATION MANAGER`（移除装饰符号）
+    - 移除 `APPLIED ENVIRONMENT` 静态显示板块
+    - 环境预览信息移至顶部，直接显示环境变量详情
+    - 提示文本改为 `SELECT GLOBAL ENVIRONMENTS:`
+    - 当前应用的全局环境项显示 `(GLOBAL)` 标记
+    - 优化颜色方案：当前选中项蓝色，GLOBAL 环境黄色，其他项灰色
+  - **ES CMD 临时环境选择界面 (`es <command>`)：**
+    - 标题改为 `TEMPORARY ENVIRONMENT SELECTOR`
+    - 移除 `APPLIED ENVIRONMENT` 板块
+    - 环境预览信息移至顶部
+    - 提示文本改为 `SELECT TEMPORARY ENVIRONMENT:`
+    - 移除 "applied environment" 默认选项，直接列出所有环境
+    - 显示 `(GLOBAL)` 和 `(HISTORY)` 标记，清晰标识环境状态
+    - 优化颜色方案：当前选中项蓝色，GLOBAL 环境黄色，HISTORY 环境橙色，其他项灰色
+    - 添加底部快捷键提示：`[⏎]APPLY  [Q]QUIT`
+    - 支持 Q 键和 ESC 键快速退出
+
+### 修复 (Fixed)
+- 🐛 **修复清屏和命令提示符问题**
+  - 优化界面渲染，避免残留输出
+
+### 技术细节 (Technical)
+- 在 `src/management.js` 中重构界面渲染逻辑
+- 在 `src/menu.js` 中重构界面渲染逻辑和按键处理
+- 添加新的颜色常量：`GRAY`（灰色）、`YELLOW`（黄色）、`ORANGE`（橙色）
+- 为 `CustomListPrompt` 添加按键监听功能，支持 Q 键退出
+
+---
+
+### Improved
+- 🎨 **Redesigned layout and color scheme for both interfaces**
+  - **ES Management Interface (`es`):**
+    - Simplified title to `ENVIRONMENT CONFIGURATION MANAGER` (removed decorative symbols)
+    - Removed `APPLIED ENVIRONMENT` static display section
+    - Moved environment preview to top, directly showing variable details
+    - Changed prompt text to `SELECT GLOBAL ENVIRONMENTS:`
+    - Currently applied global environment shows `(GLOBAL)` tag
+    - Optimized colors: current selection in cyan, GLOBAL in yellow, others in gray
+  - **ES CMD Temporary Environment Selection (`es <command>`):**
+    - Changed title to `TEMPORARY ENVIRONMENT SELECTOR`
+    - Removed `APPLIED ENVIRONMENT` section
+    - Moved environment preview to top
+    - Changed prompt text to `SELECT TEMPORARY ENVIRONMENT:`
+    - Removed "applied environment" default option, directly listing all environments
+    - Shows `(GLOBAL)` and `(HISTORY)` tags for clear environment status
+    - Optimized colors: current selection in cyan, GLOBAL in yellow, HISTORY in orange, others in gray
+    - Added shortcut hints at bottom: `[⏎]APPLY  [Q]QUIT`
+    - Support Q key and ESC key for quick exit
+
+### Fixed
+- 🐛 **Fixed screen clearing and prompt issues**
+  - Optimized interface rendering to avoid residual output
+
+### Technical Details
+- Refactored interface rendering logic in `src/management.js`
+- Refactored interface rendering logic and keypress handling in `src/menu.js`
+- Added new color constants: `GRAY`, `YELLOW`, `ORANGE`
+- Added keypress listener to `CustomListPrompt` for Q key exit support
+
 ## [1.0.1] - 2025-10-03
 
 ### 新增功能 (Added)
@@ -101,5 +165,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.0.2]: https://github.com/mofeiss/es-env-exec/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/mofeiss/es-env-exec/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mofeiss/es-env-exec/releases/tag/v1.0.0

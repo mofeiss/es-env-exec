@@ -14,7 +14,9 @@ import {
 
 // ANSI 颜色代码
 const DIM = '\x1b[2m';      // 弱化颜色
+const GRAY = '\x1b[90m';    // 灰色（弱化）
 const CYAN = '\x1b[36m';    // 青色（强调色）
+const YELLOW = '\x1b[33m';  // 黄色（GLOBAL）
 const GREEN = '\x1b[32m';   // 绿色
 const RED = '\x1b[31m';     // 红色
 const RESET = '\x1b[0m';
@@ -116,10 +118,18 @@ function customManagementRender(choices, pointer, envMap, appliedEnvName) {
 
     // 环境名称（应用颜色）
     let envName = choice.name;
+    // 如果是 GLOBAL 环境，添加标记
+    if (isApplied) {
+      envName += ' (GLOBAL)';
+    }
+
+    // 应用颜色
     if (isSelected) {
-      envName = chalk.cyan(envName);
+      envName = `${CYAN}${envName}${RESET}`;
     } else if (isApplied) {
-      envName = chalk.yellow(envName);
+      envName = `${YELLOW}${envName}${RESET}`;
+    } else {
+      envName = `${GRAY}${envName}${RESET}`;
     }
 
     // 组合成最终的行
@@ -700,6 +710,22 @@ class ManagementListPrompt extends inquirer.prompt.prompts.list {
     if (this.status === 'answered') {
       message += chalk.cyan(this.opt.choices.getChoice(this.selected).short);
     } else {
+      // 添加 PREVIEWED ENVIRONMENT 区域（移到顶部）
+      const selectedChoice = this.opt.choices.getChoice(this.selected);
+      const environment = selectedChoice.value;
+
+      message += '\n';
+      if (this.envMap.has(environment)) {
+        const env = this.envMap.get(environment);
+        message += '\n' + chalk.dim(` - NAME ${environment.name}`);
+        message += '\n' + chalk.dim(` - ANTHROPIC_BASE_URL="${env.ANTHROPIC_BASE_URL}"`);
+        const maskedToken = formatValue(env.ANTHROPIC_AUTH_TOKEN);
+        message += '\n' + chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`);
+      }
+
+      message += '\n';
+
+      // 渲染选择列表
       const choicesStr = customManagementRender(this.opt.choices, this.selected, this.envMap, this.appliedEnvName);
 
       const indexPosition = this.opt.choices.indexOf(
@@ -719,19 +745,6 @@ class ManagementListPrompt extends inquirer.prompt.prompts.list {
 
       message +=
         '\n' + this.paginator.paginate(choicesStr, realIndexPosition, this.opt.pageSize);
-
-      // 添加 PREVIEWED ENVIRONMENT 区域
-      const selectedChoice = this.opt.choices.getChoice(this.selected);
-      const environment = selectedChoice.value;
-
-      message += '\n\n' + chalk.bold('PREVIEWED ENVIRONMENT:');
-      if (this.envMap.has(environment)) {
-        const env = this.envMap.get(environment);
-        message += '\n' + chalk.dim(` - NAME ${environment.name}`);
-        message += '\n' + chalk.dim(` - ANTHROPIC_BASE_URL="${env.ANTHROPIC_BASE_URL}"`);
-        const maskedToken = formatValue(env.ANTHROPIC_AUTH_TOKEN);
-        message += '\n' + chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`);
-      }
 
       // 添加底部操作提示
       const isEnabled = !environment.disable || environment.disable === 0;
@@ -907,9 +920,9 @@ export async function showManagementMenu() {
     envMap.set(environment, environment.env);
   });
 
-  console.log(chalk.cyan.bold('\n⚙ ENVIRONMENT CONFIGURATION MANAGER ⚙\n'));
+  console.log(chalk.cyan.bold('\nENVIRONMENT CONFIGURATION MANAGER\n'));
 
-  // 显示 APPLIED ENVIRONMENT
+  // 获取 APPLIED ENVIRONMENT 用于定位和标记
   const appliedEnv = getAppliedEnvironment();
 
   // 计算初始光标位置
@@ -925,27 +938,12 @@ export async function showManagementMenu() {
     }
   }
 
-  if (appliedEnv) {
-    console.log(chalk.bold('APPLIED ENVIRONMENT:'));
-    console.log(chalk.dim(` - NAME ${appliedEnv.name}`));
-    console.log(chalk.dim(` - ANTHROPIC_BASE_URL="${appliedEnv.env.ANTHROPIC_BASE_URL}"`));
-    const maskedToken = formatValue(appliedEnv.env.ANTHROPIC_AUTH_TOKEN);
-    console.log(chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`));
-    console.log('');
-  } else {
-    console.log(chalk.bold('APPLIED ENVIRONMENT:'));
-    console.log(chalk.dim(' - None'));
-    console.log('');
-  }
-
-  console.log(chalk.bold('> AVAILABLE ENVIRONMENTS:'));
-
   // 显示交互式菜单
   const answer = await inquirer.prompt([
     {
       type: 'managementList',
       name: 'result',
-      message: 'SELECT ENVIRONMENTS:',
+      message: 'SELECT GLOBAL ENVIRONMENTS:',
       prefix: '>',
       choices: choices,
       default: defaultIndex,  // 设置初始光标位置

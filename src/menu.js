@@ -1,12 +1,16 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import figures from 'figures';
+import readline from 'readline';
 import { getEnvironments, getDefault, getAppliedEnvironment } from './config-loader.js';
 import { getLastEnv, recordEnv } from './history.js';
 
 // ANSI 颜色代码
 const DIM = '\x1b[2m';      // 弱化颜色
+const GRAY = '\x1b[90m';    // 灰色（弱化）
 const CYAN = '\x1b[36m';    // 青色（强调色）
+const YELLOW = '\x1b[33m';  // 黄色（GLOBAL）
+const ORANGE = '\x1b[38;5;214m'; // 橙色（HISTORY）
 const RESET = '\x1b[0m';
 
 /**
@@ -49,9 +53,10 @@ function formatEnvDisplay(env) {
  * @param {Array} choices - 选项数组
  * @param {Number} pointer - 当前选中的索引
  * @param {String|null} appliedEnvName - APPLIED ENVIRONMENT 名称
+ * @param {String|null} historyEnvName - 历史记录的环境名称
  * @returns {String} 渲染后的字符串
  */
-function customListRender(choices, pointer, appliedEnvName) {
+function customListRender(choices, pointer, appliedEnvName, historyEnvName) {
   let output = '';
   let separatorOffset = 0;
 
@@ -73,18 +78,34 @@ function customListRender(choices, pointer, appliedEnvName) {
     }
 
     const isSelected = i - separatorOffset === pointer;
-    const isApplied = choice.name === appliedEnvName;
+    const envName = choice.name;
+    const isGlobal = envName === appliedEnvName;
+    const isHistory = envName === historyEnvName;
 
-    // 使用 > 而不是 ❯
-    let line = (isSelected ? '> ' : '  ') + choice.name;
-
-    if (isSelected) {
-      line = chalk.cyan(line);
-    } else if (isApplied) {
-      line = chalk.yellow(line);
+    // 构建显示名称，添加标记
+    let displayName = envName;
+    if (isGlobal) {
+      displayName += ' (GLOBAL)';
+    } else if (isHistory) {
+      displayName += ' (HISTORY)';
     }
 
-    output += line + '\n';
+    // 前缀
+    const prefix = isSelected ? '> ' : '  ';
+
+    // 应用颜色
+    let coloredName;
+    if (isSelected) {
+      coloredName = `${CYAN}${displayName}${RESET}`;
+    } else if (isGlobal) {
+      coloredName = `${YELLOW}${displayName}${RESET}`;
+    } else if (isHistory) {
+      coloredName = `${ORANGE}${displayName}${RESET}`;
+    } else {
+      coloredName = `${GRAY}${displayName}${RESET}`;
+    }
+
+    output += prefix + coloredName + '\n';
   });
 
   return output.replace(/\n$/, '');
@@ -100,6 +121,68 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
     this.envMap = questions.envMap || new Map();
     // 保存 APPLIED ENVIRONMENT 名称
     this.appliedEnvName = questions.appliedEnvName || null;
+    // 保存历史记录的环境名称
+    this.historyEnvName = questions.historyEnvName || null;
+  }
+
+  /**
+   * 启动 prompt,添加自定义按键监听
+   */
+  _run(cb) {
+    const result = super._run(cb);
+
+    // 如果已经添加过监听器，先移除
+    if (this.keypressHandler) {
+      this.rl.input.removeListener('keypress', this.keypressHandler);
+    }
+
+    // 添加 keypress 事件监听
+    if (!this.rl.input._keypressEnabled) {
+      readline.emitKeypressEvents(this.rl.input);
+      this.rl.input._keypressEnabled = true;
+    }
+
+    if (this.rl.input.isTTY && !this.rl.input.isRaw) {
+      this.rl.input.setRawMode(true);
+    }
+
+    this.keypressHandler = (str, key) => {
+      this.handleKeypress(str, key);
+    };
+
+    this.rl.input.on('keypress', this.keypressHandler);
+
+    return result;
+  }
+
+  /**
+   * 处理按键事件
+   */
+  handleKeypress(str, key) {
+    if (!key) return;
+
+    const keyName = key.name;
+
+    // 忽略上下左右等导航键，让 inquirer 默认处理
+    if (['up', 'down', 'left', 'right', 'return', 'enter'].includes(keyName)) {
+      return;
+    }
+
+    // Q - 退出
+    if (str && str.toLowerCase() === 'q') {
+      this.rl.input.removeListener('keypress', this.keypressHandler);
+      this.screen.clean();
+      process.exit(0);
+      return;
+    }
+
+    // ESC - 退出
+    if (keyName === 'escape') {
+      this.rl.input.removeListener('keypress', this.keypressHandler);
+      this.screen.clean();
+      process.exit(0);
+      return;
+    }
   }
 
   render() {
@@ -114,8 +197,25 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
     if (this.status === 'answered') {
       message += chalk.cyan(this.opt.choices.getChoice(this.selected).short);
     } else {
+      // 添加 PREVIEWED ENVIRONMENT 区域（移到顶部）
+      const selectedChoice = this.opt.choices.getChoice(this.selected);
+      const selectedValue = selectedChoice.value;
+
+      message += '\n';
+      if (this.envMap.has(selectedValue)) {
+        const env = this.envMap.get(selectedValue);
+        const environmentName = selectedValue.name;
+
+        message += '\n' + chalk.dim(` - NAME ${environmentName}`);
+        message += '\n' + chalk.dim(` - ANTHROPIC_BASE_URL="${env.ANTHROPIC_BASE_URL}"`);
+        const maskedToken = formatValue(env.ANTHROPIC_AUTH_TOKEN);
+        message += '\n' + chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`);
+      }
+
+      message += '\n';
+
       // 使用自定义渲染函数
-      const choicesStr = customListRender(this.opt.choices, this.selected, this.appliedEnvName);
+      const choicesStr = customListRender(this.opt.choices, this.selected, this.appliedEnvName, this.historyEnvName);
 
       // 计算实际索引位置（简化版，每个选项只占一行）
       const indexPosition = this.opt.choices.indexOf(
@@ -135,29 +235,10 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
       message +=
         '\n' + this.paginator.paginate(choicesStr, realIndexPosition, this.opt.pageSize);
 
-      // 添加 PREVIEWED ENVIRONMENT 区域
-      const selectedChoice = this.opt.choices.getChoice(this.selected);
-      const selectedValue = selectedChoice.value;
-
-      message += '\n\n' + chalk.bold('PREVIEWED ENVIRONMENT:');
-      if (this.envMap.has(selectedValue)) {
-        const env = this.envMap.get(selectedValue);
-        let environmentName;
-
-        if (selectedValue === null) {
-          // applied environment - 从选择名称中提取
-          environmentName = selectedChoice.name.replace(/^applied environment \(([^)]+)\).*$/, '$1');
-        } else if (selectedValue === 'system-default') {
-          environmentName = 'default (system env)';
-        } else {
-          environmentName = selectedValue.name;
-        }
-
-        message += '\n' + chalk.dim(` - NAME ${environmentName}`);
-        message += '\n' + chalk.dim(` - ANTHROPIC_BASE_URL="${env.ANTHROPIC_BASE_URL}"`);
-        const maskedToken = formatValue(env.ANTHROPIC_AUTH_TOKEN);
-        message += '\n' + chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`);
-      }
+      // 添加底部操作提示
+      message += '\n\n' +
+        chalk.cyan('[⏎]') + 'APPLY  ' +
+        chalk.cyan('[Q]') + 'QUIT';
     }
 
     this.firstRender = false;
@@ -183,40 +264,15 @@ export async function showEnvironmentMenu(userCommand = []) {
   }
 
   const environments = getEnvironments();
-  const defaultConfig = getDefault();
 
-  // 获取 APPLIED ENVIRONMENT（用于光标定位和醒目显示）
+  // 获取 APPLIED ENVIRONMENT（用于标记显示）
   const appliedEnv = getAppliedEnvironment();
 
   // 构建选择列表和环境变量映射
   const choices = [];
   const envMap = new Map();
 
-  // 添加 applied environment 选项到第一位
-  if (appliedEnv) {
-    // 使用当前应用的环境作为"默认"选项
-    choices.push({
-      name: `applied environment (${appliedEnv.name})`,
-      value: null  // null 表示使用应用的环境
-    });
-    envMap.set(null, appliedEnv.env);
-  } else if (defaultConfig) {
-    // 如果没有应用的环境但有系统环境变量，使用系统环境变量
-    choices.push({
-      name: 'default (system env)',
-      value: 'system-default'
-    });
-    envMap.set('system-default', defaultConfig.env);
-  } else {
-    // 都没有的情况
-    choices.push({
-      name: 'default (not configured)',
-      value: null
-    });
-    envMap.set(null, { message: '!!! 未配置' });
-  }
-
-  // 添加其他环境
+  // 直接添加所有环境
   environments.forEach(environment => {
     choices.push({
       name: environment.name,
@@ -225,89 +281,54 @@ export async function showEnvironmentMenu(userCommand = []) {
     envMap.set(environment, environment.env);
   });
 
+  // 获取历史记录
+  const commandName = userCommand[0]; // 取第一个参数作为命令
+  const lastEnvName = commandName ? getLastEnv(commandName) : null;
+
   // 计算初始光标位置
-  // 优先级：APPLIED ENVIRONMENT > 历史记录 > default
-  let defaultIndex = 0; // 默认选中第一项（default）
+  // 优先级：历史记录 > 第一项
+  let defaultIndex = 0; // 默认选中第一项
 
-  // 如果有 APPLIED ENVIRONMENT，默认选中第一个选项（applied environment）
-  if (appliedEnv) {
-    defaultIndex = 0;
-  } else {
-    // 如果没有 APPLIED ENVIRONMENT，使用历史记录
-    const commandName = userCommand[0]; // 取第一个参数作为命令
-    const lastEnvName = commandName ? getLastEnv(commandName) : null;
+  if (lastEnvName) {
+    // 查找历史记录的环境是否存在
+    const envIndex = choices.findIndex(c =>
+      c.value && c.value.name === lastEnvName
+    );
 
-    if (lastEnvName) {
-      // 查找环境是否存在
-      const envIndex = choices.findIndex(c =>
-        c.value && c.value.name === lastEnvName
-      );
-
-      if (envIndex !== -1) {
-        // 找到了，设置光标位置
-        defaultIndex = envIndex;
-      } else {
-        // 环境不存在，删除历史记录
-        recordEnv(commandName, 'default');
-      }
+    if (envIndex !== -1) {
+      // 找到了，设置光标位置
+      defaultIndex = envIndex;
+    } else {
+      // 环境不存在，删除历史记录
+      recordEnv(commandName, 'default');
     }
   }
 
-  console.log(chalk.cyan.bold('\n⚙ ENVIRONMENT CONFIGURATION MANAGER ⚙\n'));
-
-  // 显示 APPLIED ENVIRONMENT
-  if (appliedEnv) {
-    console.log(chalk.bold('APPLIED ENVIRONMENT:'));
-    console.log(chalk.dim(` - NAME ${appliedEnv.name}`));
-    console.log(chalk.dim(` - ANTHROPIC_BASE_URL="${appliedEnv.env.ANTHROPIC_BASE_URL}"`));
-    const maskedToken = formatValue(appliedEnv.env.ANTHROPIC_AUTH_TOKEN);
-    console.log(chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`));
-    console.log('');
-  } else {
-    console.log(chalk.bold('APPLIED ENVIRONMENT:'));
-    console.log(chalk.dim(' - None'));
-    console.log('');
-  }
-
-  console.log(chalk.bold('> AVAILABLE ENVIRONMENTS:'));
-  console.log(chalk.dim('Select a temporary environment to use for this command:'));
+  console.log(chalk.cyan.bold('\nTEMPORARY ENVIRONMENT SELECTOR\n'));
 
   // 显示交互式菜单
   const answer = await inquirer.prompt([
     {
       type: 'customList',
       name: 'environment',
-      message: '>',
+      message: 'SELECT TEMPORARY ENVIRONMENT:',
       prefix: '>',
       choices: choices,
       default: defaultIndex,  // 设置初始光标位置
       pageSize: 15,
       envMap: envMap,  // 传递环境变量映射
-      appliedEnvName: appliedEnv ? appliedEnv.name : null  // 传递 APPLIED ENVIRONMENT 名称
+      appliedEnvName: appliedEnv ? appliedEnv.name : null,  // 传递 APPLIED ENVIRONMENT 名称
+      historyEnvName: lastEnvName  // 传递历史记录的环境名称
     }
   ]);
 
-  // 获取选中的环境名称和环境变量
+  // 获取选中的环境
   const selectedEnvironment = answer.environment;
-  const commandName = userCommand[0]; // 获取命令名用于历史记录
-  let environmentName, env;
+  const environmentName = selectedEnvironment.name;
+  const env = selectedEnvironment.env;
 
-  if (selectedEnvironment === null) {
-    // 选择了 applied environment
-    environmentName = appliedEnv ? appliedEnv.name : 'default';
-    env = appliedEnv ? appliedEnv.env : (defaultConfig ? defaultConfig.env : null);
-  } else if (selectedEnvironment === 'system-default') {
-    // 选择了系统默认环境
-    environmentName = 'default';
-    env = defaultConfig.env;
-  } else {
-    // 选择了具体的环境
-    environmentName = selectedEnvironment.name;
-    env = selectedEnvironment.env;
-  }
-
-  // 记录用户选择到历史（只记录非 applied environment 和 default 的选择）
-  if (commandName && selectedEnvironment !== null && selectedEnvironment !== 'system-default') {
+  // 记录用户选择到历史
+  if (commandName) {
     recordEnv(commandName, environmentName);
   }
 
@@ -321,15 +342,6 @@ export async function showEnvironmentMenu(userCommand = []) {
   const envDisplay = formatEnvDisplay(env);
   console.log(`> ${CYAN}${environmentName}${RESET}\n${envDisplay}`);
 
-  // 返回正确的环境对象供launcher使用
-  if (selectedEnvironment === null) {
-    // 返回applied environment对象
-    return appliedEnv;
-  } else if (selectedEnvironment === 'system-default') {
-    // 返回null表示使用系统默认环境
-    return null;
-  } else {
-    // 返回选择的环境对象
-    return selectedEnvironment;
-  }
+  // 返回选择的环境对象供launcher使用
+  return selectedEnvironment;
 }
