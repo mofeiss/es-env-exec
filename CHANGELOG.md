@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2025-10-06
+
+### 改进 (Improved)
+- 🧠 **智能脱敏逻辑优化**
+  - 优化环境变量显示的脱敏策略，现在只对包含 KEY 或 TOKEN 的变量名进行脱敏处理
+  - 避免对 URL 和非敏感变量进行不必要的脱敏
+  - 处理 undefined/null 值，提高显示稳定性
+
+- 🎨 **环境变量显示改进**
+  - 从硬编码显示 ANTHROPIC 相关变量改为动态显示所有环境变量
+  - 保持界面格式一致性，提升用户体验
+
+### 技术细节 (Technical)
+- 在 `src/management.js` 和 `src/menu.js` 中优化 `formatValue` 函数
+- 添加基于变量名的智能脱敏判断逻辑
+- 增强环境变量显示的动态性和兼容性
+
+---
+
+### Improved
+- 🧠 **Smart masking logic optimization**
+  - Optimized environment variable display masking strategy, now only masking variable names containing KEY or TOKEN
+  - Avoided unnecessary masking of URLs and non-sensitive variables
+  - Handled undefined/null values for improved display stability
+
+- 🎨 **Environment variable display improvements**
+  - Changed from hardcoded ANTHROPIC variable display to dynamic display of all environment variables
+  - Maintained interface format consistency for better user experience
+
+### Technical Details
+- Optimized `formatValue` function in `src/management.js` and `src/menu.js`
+- Added smart masking judgment logic based on variable names
+- Enhanced dynamic display and compatibility of environment variables
+
+---
+
 ## [1.0.2] - 2025-10-06
 
 ### 新增功能 (Added)
@@ -185,6 +221,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.0.3]: https://github.com/mofeiss/es-env-exec/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/mofeiss/es-env-exec/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/mofeiss/es-env-exec/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mofeiss/es-env-exec/releases/tag/v1.0.0

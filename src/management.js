@@ -53,18 +53,25 @@ function cleanupInquirerExitListeners() {
 }
 
 /**
- * 格式化环境变量值显示（前5...后5，http开头的URL除外）
+ * 格式化环境变量值显示（只对包含KEY或TOKEN的变量名脱敏）
  * @param {string} value - 环境变量值
+ * @param {string} key - 环境变量名
  * @returns {string} 格式化后的值
  */
-function formatValue(value) {
+function formatValue(value, key = '') {
+  // 处理 undefined 或 null 值
+  if (value === undefined || value === null) {
+    return '';
+  }
+
   // http/https 开头的 URL 不处理
   if (value.startsWith('http://') || value.startsWith('https://')) {
     return value;
   }
 
-  // 超过 32 个字符的进行脱敏
-  if (value.length > 32) {
+  // 只对包含 KEY 或 TOKEN 的变量名进行脱敏
+  const shouldMask = key.toUpperCase().includes('KEY') || key.toUpperCase().includes('TOKEN');
+  if (shouldMask && value.length > 10) {
     const prefix = value.substring(0, 5);
     const suffix = value.substring(value.length - 5);
     return `${prefix}...${suffix}`;
@@ -81,7 +88,7 @@ function formatValue(value) {
 function formatEnvDisplay(env) {
   const lines = [];
   for (const [key, value] of Object.entries(env)) {
-    const formattedValue = formatValue(value);
+    const formattedValue = formatValue(value, key);
     lines.push(`  - ${key}="${formattedValue}"`);
   }
   return `${DIM}${lines.join('\n')}${RESET}`;
@@ -719,9 +726,11 @@ class ManagementListPrompt extends inquirer.prompt.prompts.list {
       if (this.envMap.has(environment)) {
         const env = this.envMap.get(environment);
         message += '\n' + chalk.dim(` - NAME ${environment.name}`);
-        message += '\n' + chalk.dim(` - ANTHROPIC_BASE_URL="${env.ANTHROPIC_BASE_URL}"`);
-        const maskedToken = formatValue(env.ANTHROPIC_AUTH_TOKEN);
-        message += '\n' + chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`);
+        // 显示所有环境变量，保持与 chalk.dim 一致的格式
+        for (const [key, value] of Object.entries(env)) {
+          const formattedValue = formatValue(value, key);
+          message += '\n' + chalk.dim(` - ${key}="${formattedValue}"`);
+        }
       }
 
       message += '\n';

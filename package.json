@@ -1,6 +1,6 @@
 {
   "name": "es-env-exec",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Environment switcher and command executor - Manage and switch between multiple environment configurations",
   "type": "module",
   "bin": {
