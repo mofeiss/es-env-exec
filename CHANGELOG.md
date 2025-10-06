@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.2] - 2025-10-06
 
+### 新增功能 (Added)
+- 🆕 **`envs` 命令新增显示当前目录命令历史记录**
+  - 显示当前目录下所有已执行命令及其对应的环境选择
+  - 格式：`命令 → 环境名称`（例如：`ncc → production`）
+  - 帮助用户快速查看目录下的命令历史和环境使用情况
+
+- 💡 **界面新增用户提示信息**
+  - ES 管理界面底部添加橙色提示：修改 GLOBAL 后需要重启 shell 或执行 `source ~/.zshrc` 生效
+  - ES 临时环境选择界面底部添加橙色提示：按下 ENTER 可立即为当前命令应用所选环境
+
 ### 界面改进 (Improved)
 - 🎨 **重设计两个界面的布局和颜色方案**
   - **ES 管理界面 (`es`)：**
@@ -38,6 +48,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 为 `CustomListPrompt` 添加按键监听功能，支持 Q 键退出
 
 ---
+
+### Added Features
+- 🆕 **`envs` command now shows command history for current directory**
+  - Displays all executed commands and their environment selections in current directory
+  - Format: `command → environment_name` (e.g., `ncc → production`)
+  - Helps users quickly review command history and environment usage
+
+- 💡 **Added user tips to interfaces**
+  - ES management interface: Orange tip at bottom reminding to restart shell or run `source ~/.zshrc` after modifying GLOBAL
+  - ES temporary environment selector: Orange tip at bottom reminding to press ENTER to apply selected environment to current command
 
 ### Improved
 - 🎨 **Redesigned layout and color scheme for both interfaces**

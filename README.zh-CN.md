@@ -98,12 +98,18 @@ APPLIED ENVIRONMENT (Global):
  - NAME production
  - ANTHROPIC_BASE_URL="https://api.anthropic.com"
  - ANTHROPIC_AUTH_TOKEN="sk-an...xxx"
+
+COMMAND HISTORY (Current Directory):
+ - claude → staging
+ - ncc → production
+ - npm → development
 ```
 
 **这个功能帮助你：**
 - ✅ 验证当前激活的环境配置
 - ✅ 确认临时环境变量是否正确覆盖
 - ✅ 对比运行时和全局设置
+- ✅ 查看当前目录下所有命令的历史记录
 - ✅ 调试环境变量问题
 
 ## 🧠 智能历史记录

@@ -77,6 +77,24 @@ export function getLastEnv(command) {
 }
 
 /**
+ * 获取当前目录下所有命令的历史记录
+ * @returns {Array} 命令记录数组 [{command, env_name}, ...]
+ */
+export function getCurrentDirHistory() {
+  const history = loadHistory();
+  const currentPath = process.cwd();
+
+  // 查找当前目录的记录
+  const pathRecord = history.history.find(record => record.path === currentPath);
+
+  if (!pathRecord || !pathRecord.commands || pathRecord.commands.length === 0) {
+    return [];
+  }
+
+  return pathRecord.commands;
+}
+
+/**
  * 记录命令+环境
  * @param {string} command - 命令名称
  * @param {string} envName - 环境名称，如果是 'default' 则删除记录

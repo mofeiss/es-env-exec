@@ -17,6 +17,7 @@ const DIM = '\x1b[2m';      // 弱化颜色
 const GRAY = '\x1b[90m';    // 灰色（弱化）
 const CYAN = '\x1b[36m';    // 青色（强调色）
 const YELLOW = '\x1b[33m';  // 黄色（GLOBAL）
+const ORANGE = '\x1b[38;5;214m'; // 橙色（提示）
 const GREEN = '\x1b[32m';   // 绿色
 const RED = '\x1b[31m';     // 红色
 const RESET = '\x1b[0m';
@@ -759,6 +760,10 @@ class ManagementListPrompt extends inquirer.prompt.prompts.list {
         chalk.cyan('[R]') + 'RELOAD  ' +
         chalk.cyan('[⏎]') + 'APPLY  ' +
         chalk.cyan('[Q]') + 'QUIT';
+
+      // 添加橙色提示信息
+      message += '\n\n' +
+        `${ORANGE}After modifying GLOBAL, please restart shell or run "source ~/.zshrc" to take effect${RESET}`;
     }
 
     this.firstRender = false;

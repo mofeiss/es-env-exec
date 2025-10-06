@@ -2,6 +2,7 @@
 
 import chalk from 'chalk';
 import { getAppliedEnvironment } from '../src/config-loader.js';
+import { getCurrentDirHistory } from '../src/history.js';
 
 /**
  * 格式化环境变量值显示（前5...后5，http开头的URL除外）
@@ -48,6 +49,7 @@ function getRuntimeEnvironment() {
 function showEnvironments() {
   const runtimeEnv = getRuntimeEnvironment();
   const appliedEnv = getAppliedEnvironment();
+  const currentDirHistory = getCurrentDirHistory();
 
   // 如果有运行时环境变量，说明是通过 es 命令启动的
   if (runtimeEnv) {
@@ -72,6 +74,15 @@ function showEnvironments() {
       console.log('');
       console.log(chalk.yellow('Tip: Use "es" command to apply an environment'));
     }
+  }
+
+  // 显示当前目录下所有命令的历史记录
+  if (currentDirHistory.length > 0) {
+    console.log('');
+    console.log(chalk.bold('COMMAND HISTORY (Current Directory):'));
+    currentDirHistory.forEach(record => {
+      console.log(chalk.gray(` - ${record.command} → ${record.env_name}`));
+    });
   }
 }
 

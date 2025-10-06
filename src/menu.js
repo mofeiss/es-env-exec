@@ -239,6 +239,10 @@ class CustomListPrompt extends inquirer.prompt.prompts.list {
       message += '\n\n' +
         chalk.cyan('[⏎]') + 'APPLY  ' +
         chalk.cyan('[Q]') + 'QUIT';
+
+      // 添加橙色提示信息
+      message += '\n\n' +
+        `${ORANGE}Press ENTER to apply the selected environment to current command${RESET}`;
     }
 
     this.firstRender = false;
