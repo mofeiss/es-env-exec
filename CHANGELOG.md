@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2025-10-12
+
+### 改进 (Improved)
+- 🎯 **优化主界面退出逻辑**
+  - 在 ES 主界面按回车应用 GLOBAL 环境后，程序现在会优雅退出，而不是刷新界面
+  - 退出前自动显示环境变量信息（类似 `envs` 命令），方便用户确认应用的环境
+  - 调整输出顺序：成功消息 → 环境变量信息 → 重启提示 → 退出
+
+- 🎨 **增强视觉提示**
+  - 将重启 shell 的提示信息改为醒目的红色加粗显示
+  - 确保用户注意到需要重启 shell 才能使应用的全局环境生效
+
+### 技术细节 (Technical)
+- 在 `src/management.js` 中修改 ENTER 键处理逻辑
+- 新增 `showEnvironmentInfo()` 函数显示环境变量信息
+- 导入 `getCurrentDirHistory` 函数支持命令历史显示
+- 优化退出流程：直接调用 `process.exit(0)` 而不是重新加载界面
+
+---
+
+### Improved
+- 🎯 **Optimized main interface exit behavior**
+  - After applying GLOBAL environment in ES main interface, program now exits gracefully instead of refreshing
+  - Automatically displays environment information (like `envs` command) before exit for user confirmation
+  - Adjusted output order: success message → environment info → restart reminder → exit
+
+- 🎨 **Enhanced visual prompts**
+  - Changed shell restart reminder to bold red for better visibility
+  - Ensures users notice they need to restart shell for global environment to take effect
+
+### Technical Details
+- Modified ENTER key handling logic in `src/management.js`
+- Added `showEnvironmentInfo()` function to display environment information
+- Imported `getCurrentDirHistory` function to support command history display
+- Optimized exit process: directly call `process.exit(0)` instead of reloading interface
+
+---
+
 ## [1.0.3] - 2025-10-06
 
 ### 改进 (Improved)
@@ -221,6 +259,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[1.0.4]: https://github.com/mofeiss/es-env-exec/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/mofeiss/es-env-exec/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/mofeiss/es-env-exec/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/mofeiss/es-env-exec/compare/v1.0.0...v1.0.1

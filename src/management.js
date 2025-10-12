@@ -11,6 +11,7 @@ import {
   getAppliedEnvironment,
   applyEnvironment
 } from './config-loader.js';
+import { getCurrentDirHistory } from './history.js';
 
 // ANSI 颜色代码
 const DIM = '\x1b[2m';      // 弱化颜色
@@ -50,6 +51,35 @@ function cleanupInquirerExitListeners() {
       process.removeListener('exit', listener);
     }
   });
+}
+
+/**
+ * 显示环境变量信息（类似 envs 命令）
+ */
+function showEnvironmentInfo() {
+  const appliedEnv = getAppliedEnvironment();
+  const currentDirHistory = getCurrentDirHistory();
+
+  // 显示全局环境变量
+  console.log(chalk.bold('\nAPPLIED ENVIRONMENT (Global):'));
+  if (appliedEnv) {
+    console.log(chalk.dim(` - NAME ${appliedEnv.name}`));
+    console.log(chalk.dim(` - ANTHROPIC_BASE_URL="${appliedEnv.env.ANTHROPIC_BASE_URL}"`));
+    const maskedToken = formatValue(appliedEnv.env.ANTHROPIC_AUTH_TOKEN, 'ANTHROPIC_AUTH_TOKEN');
+    console.log(chalk.dim(` - ANTHROPIC_AUTH_TOKEN="${maskedToken}"`));
+  } else {
+    console.log(chalk.dim(' - None'));
+  }
+
+  // 显示当前目录下所有命令的历史记录
+  if (currentDirHistory.length > 0) {
+    console.log('');
+    console.log(chalk.bold('COMMAND HISTORY (Current Directory):'));
+    currentDirHistory.forEach(record => {
+      console.log(chalk.gray(` - ${record.command} → ${record.env_name}`));
+    });
+  }
+  console.log('');
 }
 
 /**
@@ -277,15 +307,17 @@ class ManagementListPrompt extends inquirer.prompt.prompts.list {
         cleanupOutputListeners();
         cleanupExitListeners();
 
-        // 显示成功消息并重新加载界面
+        // 显示成功消息
         console.log(chalk.green(`✓ Environment "${environment.name}" applied successfully`));
-        console.log(chalk.yellow('Note: Please restart your shell or run "source ~/.zshrc" to take effect\n'));
 
-        setTimeout(async () => {
-          await showManagementMenu();
-        }, 1000);
+        // 显示环境变量信息
+        showEnvironmentInfo();
 
-        return;
+        // 显示重启提示
+        console.log(chalk.red.bold('Note: Please restart your shell or run "source ~/.zshrc" to take effect'));
+        console.log('');
+
+        process.exit(0);
       } catch (error) {
         console.error(chalk.red(`Failed to apply environment: ${error.message}`));
         // 重置标记
